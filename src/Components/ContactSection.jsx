@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { Phone, Mail, MapPin, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { saveMessage } from '@/lib/db';
+import { toast } from 'sonner';
 
 const contactInfo = [
   {
@@ -25,6 +28,45 @@ const contactInfo = [
 ];
 
 export const ContactSection = () => {
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
+  const [sending, setSending] = useState(false);
+
+  const handleChange = (field) => (event) => {
+    setForm((current) => ({ ...current, [field]: event.target.value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!form.name || !form.email || !form.message) {
+      toast.error('Please add your name, email, and message.');
+      return;
+    }
+
+    setSending(true);
+    try {
+      await saveMessage({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        subject: form.subject.trim(),
+        message: form.message.trim(),
+        source: 'homepage-contact',
+      });
+      toast.success('Message sent. We will get back to you soon.');
+      setForm({ name: '', email: '', subject: '', message: '' });
+    } catch (error) {
+      console.error(error);
+      toast.error('Message could not be sent. Please try again.');
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
     <section id="contact" className="relative py-24 lg:py-32 bg-background">
       <div className="container mx-auto px-4 lg:px-8">
@@ -74,12 +116,14 @@ export const ContactSection = () => {
           {/* Right Side - Form */}
           <div className="glass-card rounded-2xl p-8 lg:p-10">
             <h3 className="font-display text-2xl mb-6">Send us a message</h3>
-            <form className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid sm:grid-cols-2 gap-5">
                 <div>
                   <label className="text-sm text-muted-foreground mb-2 block">Name</label>
                   <Input
                     placeholder="Your name"
+                    value={form.name}
+                    onChange={handleChange('name')}
                     className="bg-background/50 border-border focus:border-primary"
                   />
                 </div>
@@ -88,6 +132,8 @@ export const ContactSection = () => {
                   <Input
                     type="email"
                     placeholder="your@email.com"
+                    value={form.email}
+                    onChange={handleChange('email')}
                     className="bg-background/50 border-border focus:border-primary"
                   />
                 </div>
@@ -96,6 +142,8 @@ export const ContactSection = () => {
                 <label className="text-sm text-muted-foreground mb-2 block">Subject</label>
                 <Input
                   placeholder="Project inquiry"
+                  value={form.subject}
+                  onChange={handleChange('subject')}
                   className="bg-background/50 border-border focus:border-primary"
                 />
               </div>
@@ -104,12 +152,14 @@ export const ContactSection = () => {
                 <Textarea
                   placeholder="Tell us about your project..."
                   rows={5}
+                  value={form.message}
+                  onChange={handleChange('message')}
                   className="bg-background/50 border-border focus:border-primary resize-none"
                 />
               </div>
-              <Button type="submit" size="lg" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold glow-primary">
+              <Button type="submit" size="lg" disabled={sending} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold glow-primary">
                 <Send className="w-4 h-4 mr-2" />
-                Send Message
+                {sending ? 'Sending...' : 'Send Message'}
               </Button>
             </form>
           </div>

@@ -1,0 +1,52 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function validMessage() {
+      return request.resource.data.keys().hasOnly([
+        'name',
+        'email',
+        'subject',
+        'message',
+        'source',
+        'read',
+        'createdAt'
+      ])
+      && request.resource.data.name is string
+      && request.resource.data.name.size() > 0
+      && request.resource.data.name.size() <= 120
+      && request.resource.data.email is string
+      && request.resource.data.email.size() > 3
+      && request.resource.data.email.size() <= 180
+      && request.resource.data.message is string
+      && request.resource.data.message.size() > 0
+      && request.resource.data.message.size() <= 3000
+      && (!('subject' in request.resource.data) || request.resource.data.subject is string)
+      && (!('source' in request.resource.data) || request.resource.data.source is string)
+      && request.resource.data.read == false;
+    }
+
+    match /messages/{messageId} {
+      allow create: if validMessage();
+      allow read, update, delete: if signedIn();
+    }
+
+    match /equipment/{equipmentId} {
+      allow read: if true;
+      allow create, update, delete: if signedIn();
+    }
+
+    match /works/{workId} {
+      allow read: if true;
+      allow create, update, delete: if signedIn();
+    }
+
+    match /{document=**} {
+      allow read, write: if signedIn();
+    }
+  }
+}

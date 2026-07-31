@@ -1,118 +1,124 @@
-import { Film, Instagram, Youtube, Twitter, Facebook } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const footerLinks = {
   services: [
-    { name: 'Film Production', href: '#services' },
-    { name: 'Post Production', href: '#services' },
-    { name: 'Film Restoration', href: '#services' },
-    { name: 'Equipment Rental', href: '#equipment' },
+    { name: 'Film Production', href: '/#services' },
+    { name: 'Post Production', href: '/#services' },
+    { name: 'Film Restoration', href: '/#services' },
+    { name: 'Equipment Rental', href: '/equipment' },
   ],
   company: [
-    { name: 'About Us', href: '#about' },
-    { name: 'Workshop', href: '#workshop' },
-    { name: 'Contact', href: '#contact' },
-    { name: 'Careers', href: '#' },
+    { name: 'About Us', href: '/#about' },
+    { name: 'Our Work', href: '/our-work' },
+    { name: 'Contact', href: '/#contact' },
+    { name: 'Admin Login', href: '/login' },
   ],
   resources: [
-    { name: 'Phantom Camera Info', href: '#equipment' },
-    { name: 'Pricing', href: '#' },
-    { name: 'FAQ', href: '#' },
-    { name: 'Blog', href: '#' },
+    { name: 'Phantom Flex 4K', href: '/equipment' },
+    { name: 'Pricing & Rental', href: '/equipment' },
+    { name: '360° 3D Production', href: '/#services' },
+    { name: 'Flame Relighting', href: '/#services' },
   ],
 };
 
-const socialLinks = [
-  { icon: Instagram, href: '#', label: 'Instagram' },
-  { icon: Youtube, href: '#', label: 'YouTube' },
-  { icon: Twitter, href: '#', label: 'Twitter' },
-  { icon: Facebook, href: '#', label: 'Facebook' },
-];
-
 export const Footer = () => {
+  const year = new Date().getFullYear();
+
   return (
-    <footer className="bg-card border-t border-border">
-      <div className="container mx-auto px-4 lg:px-8 py-16">
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
+    <footer style={{ backgroundColor: 'var(--card)', borderTop: '1px solid var(--border)' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '4rem 2rem 2rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '3rem', marginBottom: '3.5rem' }}>
+
           {/* Brand */}
-          <div className="lg:col-span-2">
-            <a href="#home" className="flex items-center gap-3 mb-6">
-              <Film className="w-10 h-10 text-primary" />
-              <span className="font-display text-2xl tracking-wider">
-                UNITED<span className="text-primary">FILMS</span>
-              </span>
-            </a>
-            <p className="text-muted-foreground text-sm leading-relaxed mb-6 max-w-xs">
-              Professional film production, high-speed camera rentals, and post-production services. 
-              Bringing cinematic excellence to every project since 2004.
+          <div style={{ gridColumn: 'span 2' }}>
+            <Link to="/" style={{
+              fontFamily: "'Instrument Serif', Georgia, serif",
+              fontSize: '1.5rem',
+              fontWeight: 400,
+              color: 'var(--foreground)',
+              textDecoration: 'none',
+              display: 'inline-block',
+              marginBottom: '1rem',
+              letterSpacing: '-0.01em',
+            }}>
+              United<span style={{ color: 'var(--primary)' }}>Films</span>
+            </Link>
+            <p style={{
+              fontSize: '0.8125rem',
+              color: 'var(--muted-foreground)',
+              lineHeight: 1.7,
+              maxWidth: '320px',
+              margin: 0,
+            }}>
+              World-class film production, high-speed Phantom camera rentals, and professional post-production services. Bringing cinematic excellence to every project.
             </p>
-            <div className="flex gap-3">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  aria-label={social.label}
-                  className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-300"
-                >
-                  <social.icon className="w-5 h-5" />
-                </a>
-              ))}
-            </div>
           </div>
 
-          {/* Links */}
+          {/* Links: Services */}
           <div>
-            <h4 className="font-display text-lg mb-4">Services</h4>
-            <ul className="space-y-3">
+            <p className="eyebrow" style={{ marginBottom: '1rem' }}>Services</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               {footerLinks.services.map((link) => (
                 <li key={link.name}>
-                  <a href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                  <Link to={link.href} style={{ fontSize: '0.8125rem', color: 'var(--muted-foreground)', textDecoration: 'none', transition: 'color 0.2s' }}
+                    onMouseEnter={e => e.target.style.color = 'var(--foreground)'}
+                    onMouseLeave={e => e.target.style.color = 'var(--muted-foreground)'}>
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
           </div>
 
+          {/* Links: Company */}
           <div>
-            <h4 className="font-display text-lg mb-4">Company</h4>
-            <ul className="space-y-3">
+            <p className="eyebrow" style={{ marginBottom: '1rem' }}>Company</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               {footerLinks.company.map((link) => (
                 <li key={link.name}>
-                  <a href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                  <Link to={link.href} style={{ fontSize: '0.8125rem', color: 'var(--muted-foreground)', textDecoration: 'none', transition: 'color 0.2s' }}
+                    onMouseEnter={e => e.target.style.color = 'var(--foreground)'}
+                    onMouseLeave={e => e.target.style.color = 'var(--muted-foreground)'}>
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
           </div>
 
+          {/* Links: Resources */}
           <div>
-            <h4 className="font-display text-lg mb-4">Resources</h4>
-            <ul className="space-y-3">
+            <p className="eyebrow" style={{ marginBottom: '1rem' }}>Resources</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               {footerLinks.resources.map((link) => (
                 <li key={link.name}>
-                  <a href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                  <Link to={link.href} style={{ fontSize: '0.8125rem', color: 'var(--muted-foreground)', textDecoration: 'none', transition: 'color 0.2s' }}
+                    onMouseEnter={e => e.target.style.color = 'var(--foreground)'}
+                    onMouseLeave={e => e.target.style.color = 'var(--muted-foreground)'}>
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
           </div>
         </div>
 
-        {/* Bottom */}
-        <div className="pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} United Films. All rights reserved.
+        {/* Bottom bar */}
+        <div style={{
+          borderTop: '1px solid var(--border)',
+          paddingTop: '1.75rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem',
+        }}>
+          <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: '0.6875rem', color: 'var(--muted-foreground)', margin: 0 }}>
+            © {year} United Films. All rights reserved.
           </p>
-          <div className="flex gap-6">
-            <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Privacy Policy
-            </a>
-            <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Terms of Service
-            </a>
-          </div>
+          <a href="tel:+13232289022" style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)', textDecoration: 'none', fontVariantNumeric: 'tabular-nums' }}>
+            1 (323) 228-9022
+          </a>
         </div>
       </div>
     </footer>

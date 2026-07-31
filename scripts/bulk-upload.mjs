@@ -26,13 +26,13 @@ const __dirname = dirname(__filename);
 
 // ── Firebase config (same as firebase.js) ────────────────────────
 const firebaseConfig = {
-  apiKey: "AIzaSyDdNTipBC96p-nSEBZKBF_sJneHKbn_UNc",
-  authDomain: "unitedfilms-dd8b1.firebaseapp.com",
-  projectId: "unitedfilms-dd8b1",
-  storageBucket: "unitedfilms-dd8b1.firebasestorage.app",
-  messagingSenderId: "175365539405",
-  appId: "1:175365539405:web:e0d263c69c6c7b81637e04",
-  measurementId: "G-ZP1XXLG96K",
+  apiKey: "AIzaSyAwP2RhO8oPeqwDD-Xo3_QeI9YOhZ13x0k",
+  authDomain: "unitedfilms-525dc.firebaseapp.com",
+  projectId: "unitedfilms-525dc",
+  storageBucket: "unitedfilms-525dc.firebasestorage.app",
+  messagingSenderId: "610504729167",
+  appId: "1:610504729167:web:d8027611e380d1d7eec03a",
+  measurementId: "G-M0QEZQGLS9",
 };
 
 const app = initializeApp(firebaseConfig);
@@ -74,7 +74,7 @@ async function getExistingEquipment() {
 }
 
 async function getExistingMedia() {
-  const snap = await getDocs(collection(db, "serviceMedia"));
+  const snap = await getDocs(collection(db, "workshops"));
   return new Set(snap.docs.map((d) => d.data().localPath));
 }
 
@@ -230,11 +230,13 @@ async function uploadServiceMedia() {
         console.log(`  ⬆  Uploading [${mediaType}]: ${fileName} (${(statSync(filePath).size / 1024 / 1024).toFixed(1)} MB)`);
         const url = await uploadToStorage(filePath, storagePath);
 
-        await addDoc(collection(db, "serviceMedia"), {
-          fileName,
-          folder,
+        // Upload to 'workshops' collection (matching WorkshopForm.jsx)
+        await addDoc(collection(db, "workshops"), {
+          title: fileName.replace(/\.[^/.]+$/, "").replace(/_/g, " "), // Clean title from filename
+          description: `Asset from ${folder} catalogue`,
+          mediaUrl: url,
           mediaType,
-          url,
+          folder,
           localPath: localKey,
           createdAt: serverTimestamp(),
         });
