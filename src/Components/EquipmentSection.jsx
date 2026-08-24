@@ -111,7 +111,9 @@ export const EquipmentSection = () => {
                 <video
                   ref={videoRef}
                   src={featured.videoUrl}
-                  controls
+                  autoPlay
+                  muted
+                  loop
                   playsInline
                   className={`featured-media-panel__video ${playing ? 'featured-media-panel__video--visible' : ''}`}
                 />

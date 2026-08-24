@@ -11,9 +11,8 @@ function getInitialTheme() {
     const stored = localStorage.getItem('uf-theme');
     if (stored === 'dark' || stored === 'light') return stored;
   } catch (_) {}
-  // Fall back to system preference
-  if (window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
-  return 'light';
+  // Archive is cinema-dark — default to dark
+  return 'dark';
 }
 
 export function ThemeProvider({ children }) {

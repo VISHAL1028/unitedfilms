@@ -22,7 +22,7 @@ export function HeroEditorial() {
 
         {/* H1 */}
         <h1 style={{
-          fontFamily: "'Instrument Serif', Georgia, serif",
+          fontFamily: "'Poppins', ui-sans-serif, system-ui, sans-serif",
           fontSize: 'clamp(2.75rem, 6vw, 4.5rem)',
           fontWeight: 400,
           lineHeight: 1.08,
@@ -124,7 +124,7 @@ export function HeroEditorial() {
                 {stat.label}
               </p>
               <p style={{
-                fontFamily: "'Instrument Serif', Georgia, serif",
+                fontFamily: "'Poppins', ui-sans-serif, system-ui, sans-serif",
                 fontSize: 'clamp(1.75rem, 3vw, 2.5rem)',
                 fontWeight: 400,
                 color: 'var(--foreground)',

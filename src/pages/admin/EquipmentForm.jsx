@@ -1,23 +1,58 @@
 import { useState, useEffect } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { uploadFile } from "@/lib/upload";
-import { saveEquipment, getAllEquipment, deleteEquipment, updateEquipment, setEquipmentFeatured } from "@/lib/db";
-import { Trash2, Pencil, ImagePlus, Loader2, CheckCircle2, XCircle, Star, Camera, Video, Play } from "lucide-react";
+import {
+  saveEquipment,
+  getAllEquipment,
+  deleteEquipment,
+  updateEquipment,
+  setEquipmentFeatured,
+  toggleEquipmentListing,
+} from "@/lib/db";
+import {
+  Trash2,
+  Pencil,
+  ImagePlus,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  Star,
+  Camera,
+  Video,
+  Eye,
+  EyeOff,
+  Plus,
+} from "lucide-react";
 import { toast } from "sonner";
 
 const CATEGORIES = [
-  "Cameras", "Lenses", "Color Grading & VFX",
-  "Film Scanners & Restoration", "Film Processing & Lab",
-  "Projectors", "Support Equipment", "Storage & Systems",
+  "Cameras",
+  "Lenses",
+  "Color Grading & VFX",
+  "Film Scanners & Restoration",
+  "Film Processing & Lab",
+  "Projectors",
+  "Support Equipment",
+  "Storage & Systems",
 ];
 
 const emptyForm = {
-  name: "", category: CATEGORIES[0], description: "",
-  file: null, imageUrl: "", featured: false,
-  featuredLabel: "", rentalPrice: "", oldPrice: "",
-  rentalUnit: "day", featureBulletsText: "",
+  name: "",
+  category: CATEGORIES[0],
+  description: "",
+  file: null,
+  imageUrl: "",
+  featured: false,
+  featuredLabel: "",
+  rentalPrice: "",
+  oldPrice: "",
+  rentalUnit: "day",
+  featureBulletsText: "",
+  status: "Available for Rent",
+  listed: true,
   // Video fields
-  videoFile: null, videoUrl: "",
+  videoFile: null,
+  videoUrl: "",
 };
 
 const EquipmentForm = () => {
@@ -30,29 +65,36 @@ const EquipmentForm = () => {
   const [items, setItems] = useState([]);
   const [editId, setEditId] = useState(null);
   const [loadingItems, setLoadingItems] = useState(true);
+  const [filterCategory, setFilterCategory] = useState("All");
 
   const fetchItems = async () => {
     setLoadingItems(true);
-    try { setItems(await getAllEquipment()); }
-    catch { toast.error("Failed to load equipment."); }
-    finally { setLoadingItems(false); }
+    try {
+      setItems(await getAllEquipment(true)); // Include delisted in admin
+    } catch {
+      toast.error("Failed to load equipment.");
+    } finally {
+      setLoadingItems(false);
+    }
   };
 
-  useEffect(() => { fetchItems(); }, []);
+  useEffect(() => {
+    fetchItems();
+  }, []);
 
-  const updateForm = (field, value) => setForm(f => ({ ...f, [field]: value }));
+  const updateForm = (field, value) => setForm((f) => ({ ...f, [field]: value }));
 
   const handleFile = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setForm(f => ({ ...f, file }));
+    setForm((f) => ({ ...f, file }));
     setPreview(URL.createObjectURL(file));
   };
 
   const handleVideoFile = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setForm(f => ({ ...f, videoFile: file }));
+    setForm((f) => ({ ...f, videoFile: file }));
     setVideoPreview(URL.createObjectURL(file));
   };
 
@@ -65,276 +107,445 @@ const EquipmentForm = () => {
 
   const clearOtherFeatured = async (currentId) => {
     await Promise.all(
-      items.filter(i => i.featured && i.id !== currentId).map(i => setEquipmentFeatured(i.id, false))
+      items
+        .filter((i) => i.featured && i.id !== currentId)
+        .map((i) => setEquipmentFeatured(i.id, false))
     );
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.category) { toast.error("Name and category are required."); return; }
-    setLoading(true); setProgress(0); setVideoProgress(0);
+    if (!form.name || !form.category) {
+      toast.error("Name and category are required.");
+      return;
+    }
+    setLoading(true);
+    setProgress(0);
+    setVideoProgress(0);
     try {
       // Upload image
       let imageUrl = form.imageUrl || "";
       if (form.file) imageUrl = await uploadFile(form.file, "equipment", setProgress);
 
-      // Upload video (if provided)
+      // Upload video
       let videoUrl = form.videoUrl || "";
-      if (form.videoFile) videoUrl = await uploadFile(form.videoFile, "equipment-videos", setVideoProgress);
+      if (form.videoFile) {
+        videoUrl = await uploadFile(form.videoFile, "equipment/videos", setVideoProgress);
+      }
+
+      const featureBullets = form.featureBulletsText
+        ? form.featureBulletsText.split("\n").map((s) => s.trim()).filter(Boolean)
+        : [];
 
       const payload = {
-        name: form.name.trim(), category: form.category,
-        description: form.description.trim(), imageUrl,
+        name: form.name.trim(),
+        category: form.category,
+        description: form.description.trim(),
+        imageUrl,
         videoUrl,
-        featured: form.featured, featuredLabel: form.featuredLabel.trim(),
-        rentalPrice: form.rentalPrice.trim(), oldPrice: form.oldPrice.trim(),
-        rentalUnit: form.rentalUnit.trim() || "day",
-        featureBullets: form.featureBulletsText.split("\n").map(l => l.trim()).filter(Boolean),
+        featured: form.featured,
+        featuredLabel: form.featuredLabel.trim(),
+        rentalPrice: form.rentalPrice.trim(),
+        oldPrice: form.oldPrice.trim(),
+        rentalUnit: form.rentalUnit,
+        featureBullets,
+        status: form.status || "Available for Rent",
+        listed: form.listed !== false,
       };
-      let savedId = editId;
-      if (editId) { await updateEquipment(editId, payload); toast.success("Equipment updated"); }
-      else { const ref = await saveEquipment(payload); savedId = ref.id; toast.success("Equipment added"); }
-      if (payload.featured) await clearOtherFeatured(savedId);
-      clearForm(); await fetchItems();
-    } catch (err) { toast.error("Save failed: " + err.message); }
-    finally { setLoading(false); setProgress(0); setVideoProgress(0); }
+
+      if (editId) {
+        if (form.featured) await clearOtherFeatured(editId);
+        await updateEquipment(editId, payload);
+        toast.success("Equipment updated successfully.");
+      } else {
+        const docRef = await saveEquipment(payload);
+        if (form.featured) await clearOtherFeatured(docRef.id);
+        toast.success("Equipment added successfully.");
+      }
+
+      clearForm();
+      fetchItems();
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || "Operation failed.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEdit = (item) => {
     setEditId(item.id);
     setForm({
-      name: item.name || "", category: item.category || CATEGORIES[0],
-      description: item.description || "", file: null,
-      imageUrl: item.imageUrl || "", featured: Boolean(item.featured),
-      featuredLabel: item.featuredLabel || "", rentalPrice: item.rentalPrice || "",
-      oldPrice: item.oldPrice || "", rentalUnit: item.rentalUnit || "day",
-      featureBulletsText: Array.isArray(item.featureBullets) ? item.featureBullets.join("\n") : "",
-      videoFile: null, videoUrl: item.videoUrl || "",
+      name: item.name || "",
+      category: item.category || CATEGORIES[0],
+      description: item.description || "",
+      imageUrl: item.imageUrl || item.image || "",
+      featured: item.featured || false,
+      featuredLabel: item.featuredLabel || "",
+      rentalPrice: item.rentalPrice || "",
+      oldPrice: item.oldPrice || "",
+      rentalUnit: item.rentalUnit || "day",
+      featureBulletsText: (item.featureBullets || []).join("\n"),
+      status: item.status || "Available for Rent",
+      listed: item.listed !== false,
+      videoUrl: item.videoUrl || "",
+      file: null,
+      videoFile: null,
     });
-    setPreview(item.imageUrl || null);
+    setPreview(item.imageUrl || item.image || null);
     setVideoPreview(item.videoUrl || null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = async (id, name) => {
-    if (!confirm(`Delete "${name}"?`)) return;
-    try { await deleteEquipment(id); toast.success(`"${name}" deleted.`); await fetchItems(); }
-    catch { toast.error("Delete failed."); }
+    if (!window.confirm(`Delete "${name}" permanently?`)) return;
+    try {
+      await deleteEquipment(id);
+      toast.success("Equipment deleted.");
+      fetchItems();
+    } catch {
+      toast.error("Failed to delete equipment.");
+    }
   };
+
+  const handleToggleList = async (item) => {
+    const nextState = item.listed === false ? true : false;
+    try {
+      await toggleEquipmentListing(item.id, nextState);
+      toast.success(nextState ? `"${item.name}" is now LISTED on website.` : `"${item.name}" is now DELISTED (hidden).`);
+      fetchItems();
+    } catch {
+      toast.error("Failed to update listing status.");
+    }
+  };
+
+  const filteredItems =
+    filterCategory === "All"
+      ? items
+      : items.filter((i) => i.category === filterCategory);
 
   return (
     <AdminLayout>
       <div className="admin-page-header">
-        <h1>Equipment Manager</h1>
-        <p>{editId ? "Editing an existing item — update fields and save." : "Add new equipment to the catalogue."}</p>
+        <h1>Equipment Management</h1>
+        <p>List, delist, add, edit, and attach photos/videos to equipment catalogue items.</p>
       </div>
 
-      {/* ── Form ── */}
-      <div className="admin-form-card">
-        <h2>{editId ? "✏️  Edit Equipment" : "➕  Add New Equipment"}</h2>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 24, marginBottom: 32 }}>
+        {/* Form Panel */}
+        <div className="admin-card">
+          <div className="admin-card__header">
+            <h2 className="admin-card__title">
+              {editId ? "Edit Equipment Item" : "Add New Equipment"}
+            </h2>
+            {editId && (
+              <button onClick={clearForm} className="admin-btn admin-btn--ghost" style={{ fontSize: 12 }}>
+                Cancel Edit
+              </button>
+            )}
+          </div>
 
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-          {/* Name + Category */}
-          <div className="admin-form-grid-2">
-            <div className="admin-form-group">
-              <label className="admin-label">Name *</label>
-              <input
-                required className="admin-input"
-                value={form.name}
-                onChange={e => updateForm("name", e.target.value)}
-                placeholder="e.g. ARRI 435 Film Camera"
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
+              <div>
+                <label className="admin-label">Equipment Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Phantom Flex 4K (1000 fps)"
+                  value={form.name}
+                  onChange={(e) => updateForm("name", e.target.value)}
+                  className="admin-input"
+                />
+              </div>
+
+              <div>
+                <label className="admin-label">Category *</label>
+                <select
+                  value={form.category}
+                  onChange={(e) => updateForm("category", e.target.value)}
+                  className="admin-select"
+                >
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="admin-label">Availability / Status</label>
+                <select
+                  value={form.status}
+                  onChange={(e) => updateForm("status", e.target.value)}
+                  className="admin-select"
+                >
+                  <option value="Available for Rent">Available for Rent</option>
+                  <option value="Available for Sale">Available for Sale</option>
+                  <option value="In Facility">In Facility</option>
+                  <option value="Available on Set">Available on Set</option>
+                  <option value="Reserved">Reserved</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="admin-label">Rental / Purchase Price (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. $900 / day or $14,990"
+                  value={form.rentalPrice}
+                  onChange={(e) => updateForm("rentalPrice", e.target.value)}
+                  className="admin-input"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="admin-label">Description</label>
+              <textarea
+                rows={3}
+                placeholder="Technical specifications, capabilities, included kit, or sensor details..."
+                value={form.description}
+                onChange={(e) => updateForm("description", e.target.value)}
+                className="admin-textarea"
               />
             </div>
-            <div className="admin-form-group">
-              <label className="admin-label">Category *</label>
-              <select className="admin-select" value={form.category} onChange={e => updateForm("category", e.target.value)}>
-                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+
+            {/* Media: Photo & Video Upload */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
+              {/* Photo */}
+              <div style={{ border: "1px solid var(--color-border)", padding: 14, borderRadius: 8, background: "rgba(0,0,0,0.2)" }}>
+                <label className="admin-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <ImagePlus size={14} className="text-primary" /> Equipment Photo
+                </label>
+                <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 8 }}>
+                  {preview ? (
+                    <img src={preview} alt="Preview" style={{ width: 80, height: 60, objectFit: "cover", borderRadius: 6, border: "1px solid var(--color-border)" }} />
+                  ) : (
+                    <div style={{ width: 80, height: 60, background: "rgba(255,255,255,0.05)", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Camera size={20} className="text-muted-foreground" />
+                    </div>
+                  )}
+                  <div style={{ flex: 1 }}>
+                    <input type="file" accept="image/*" onChange={handleFile} style={{ fontSize: 11, color: "#9ca3af" }} />
+                    <input
+                      type="text"
+                      placeholder="Or paste image URL"
+                      value={form.imageUrl}
+                      onChange={(e) => {
+                        updateForm("imageUrl", e.target.value);
+                        setPreview(e.target.value);
+                      }}
+                      className="admin-input"
+                      style={{ marginTop: 6, fontSize: 11, padding: "4px 8px" }}
+                    />
+                  </div>
+                </div>
+                {progress > 0 && progress < 100 && (
+                  <div style={{ marginTop: 6, fontSize: 10, color: "var(--color-primary)" }}>Uploading image: {progress}%</div>
+                )}
+              </div>
+
+              {/* Video */}
+              <div style={{ border: "1px solid var(--color-border)", padding: 14, borderRadius: 8, background: "rgba(0,0,0,0.2)" }}>
+                <label className="admin-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <Video size={14} className="text-accent" /> Demo / Showcase Video (Optional)
+                </label>
+                <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 8 }}>
+                  {videoPreview ? (
+                    <video src={videoPreview} muted style={{ width: 80, height: 60, objectFit: "cover", borderRadius: 6, background: "#000" }} />
+                  ) : (
+                    <div style={{ width: 80, height: 60, background: "rgba(255,255,255,0.05)", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Video size={20} className="text-muted-foreground" />
+                    </div>
+                  )}
+                  <div style={{ flex: 1 }}>
+                    <input type="file" accept="video/*" onChange={handleVideoFile} style={{ fontSize: 11, color: "#9ca3af" }} />
+                    <input
+                      type="text"
+                      placeholder="Or paste video URL (.mp4 / .mov)"
+                      value={form.videoUrl}
+                      onChange={(e) => {
+                        updateForm("videoUrl", e.target.value);
+                        setVideoPreview(e.target.value);
+                      }}
+                      className="admin-input"
+                      style={{ marginTop: 6, fontSize: 11, padding: "4px 8px" }}
+                    />
+                  </div>
+                </div>
+                {videoProgress > 0 && videoProgress < 100 && (
+                  <div style={{ marginTop: 6, fontSize: 10, color: "var(--color-accent)" }}>Uploading video: {videoProgress}%</div>
+                )}
+              </div>
+            </div>
+
+            {/* Listing State Toggle */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 13, color: "var(--color-foreground)" }}>
+                <input
+                  type="checkbox"
+                  checked={form.listed !== false}
+                  onChange={(e) => updateForm("listed", e.target.checked)}
+                />
+                <span>Publicly Listed (Visible on website catalogue)</span>
+              </label>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 }}>
+              <button
+                type="submit"
+                disabled={loading}
+                className="admin-btn admin-btn--primary"
+                style={{ minWidth: 160, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> Saving...
+                  </>
+                ) : editId ? (
+                  "Update Equipment"
+                ) : (
+                  <>
+                    <Plus size={16} /> Add Equipment
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* List & Delist Inventory Table */}
+        <div className="admin-card">
+          <div className="admin-card__header" style={{ flexWrap: "wrap", gap: 12 }}>
+            <div>
+              <h2 className="admin-card__title">Inventory & Listing Status</h2>
+              <p style={{ fontSize: 12, color: "var(--color-muted-foreground)", marginTop: 2 }}>
+                Click List/Delist to instantly publish or hide items from the public website.
+              </p>
+            </div>
+
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <span style={{ fontSize: 12, color: "var(--color-muted-foreground)" }}>Category:</span>
+              <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                className="admin-select"
+                style={{ padding: "4px 8px", fontSize: 12 }}
+              >
+                <option value="All">All Categories ({items.length})</option>
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
               </select>
             </div>
           </div>
 
-          {/* Description */}
-          <div className="admin-form-group">
-            <label className="admin-label">Description</label>
-            <textarea
-              className="admin-textarea" rows={3}
-              value={form.description}
-              onChange={e => updateForm("description", e.target.value)}
-              placeholder="Short product description…"
-            />
-          </div>
-
-          {/* Prices */}
-          <div className="admin-form-grid-3">
-            <div className="admin-form-group">
-              <label className="admin-label">Rental Price</label>
-              <input className="admin-input" value={form.rentalPrice} onChange={e => updateForm("rentalPrice", e.target.value)} placeholder="1500" />
+          {loadingItems ? (
+            <div style={{ textAlign: "center", padding: 32, color: "var(--color-muted-foreground)" }}>
+              <Loader2 size={24} className="animate-spin" style={{ margin: "0 auto 8px" }} />
+              Loading equipment...
             </div>
-            <div className="admin-form-group">
-              <label className="admin-label">Old Price</label>
-              <input className="admin-input" value={form.oldPrice} onChange={e => updateForm("oldPrice", e.target.value)} placeholder="3000" />
+          ) : filteredItems.length === 0 ? (
+            <div style={{ textAlign: "center", padding: 32, color: "var(--color-muted-foreground)", fontSize: 13 }}>
+              No equipment found. Add your first item above.
             </div>
-            <div className="admin-form-group">
-              <label className="admin-label">Unit</label>
-              <input className="admin-input" value={form.rentalUnit} onChange={e => updateForm("rentalUnit", e.target.value)} placeholder="day" />
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid var(--color-border)", textAlign: "left", color: "var(--color-muted-foreground)" }}>
+                    <th style={{ padding: "10px 12px" }}>Item</th>
+                    <th style={{ padding: "10px 12px" }}>Category</th>
+                    <th style={{ padding: "10px 12px" }}>Status</th>
+                    <th style={{ padding: "10px 12px" }}>Listing</th>
+                    <th style={{ padding: "10px 12px", textAlign: "right" }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredItems.map((item) => {
+                    const isListed = item.listed !== false;
+                    return (
+                      <tr
+                        key={item.id}
+                        style={{
+                          borderBottom: "1px solid var(--color-border)",
+                          opacity: isListed ? 1 : 0.6,
+                          background: isListed ? "transparent" : "rgba(255,255,255,0.02)",
+                        }}
+                      >
+                        <td style={{ padding: "10px 12px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <img
+                              src={item.imageUrl || item.image || "/archive/img-bd65e40b-73f6-4edf-b025-6c32b11b1186.jpg"}
+                              alt={item.name}
+                              style={{ width: 44, height: 34, objectFit: "cover", borderRadius: 4, background: "#111" }}
+                            />
+                            <div>
+                              <div style={{ fontWeight: 600, color: "var(--color-foreground)" }}>{item.name}</div>
+                              {item.rentalPrice && (
+                                <div style={{ fontSize: 11, color: "var(--color-primary)" }}>{item.rentalPrice}</div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ padding: "10px 12px", color: "var(--color-muted-foreground)" }}>
+                          {item.category}
+                        </td>
+                        <td style={{ padding: "10px 12px" }}>
+                          <span style={{ fontSize: 11, color: "var(--color-accent)", border: "1px solid var(--color-border)", padding: "2px 6px", borderRadius: 4 }}>
+                            {item.status || "Available"}
+                          </span>
+                        </td>
+                        <td style={{ padding: "10px 12px" }}>
+                          <button
+                            onClick={() => handleToggleList(item)}
+                            title={isListed ? "Click to delist (hide from website)" : "Click to list (show on website)"}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 5,
+                              padding: "3px 8px",
+                              borderRadius: 12,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              cursor: "pointer",
+                              border: isListed ? "1px solid rgba(34,197,94,0.3)" : "1px solid rgba(239,68,68,0.3)",
+                              background: isListed ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)",
+                              color: isListed ? "#4ade80" : "#f87171",
+                            }}
+                          >
+                            {isListed ? <Eye size={12} /> : <EyeOff size={12} />}
+                            {isListed ? "Listed" : "Delisted"}
+                          </button>
+                        </td>
+                        <td style={{ padding: "10px 12px", textAlign: "right" }}>
+                          <div style={{ display: "inline-flex", gap: 6 }}>
+                            <button
+                              onClick={() => handleEdit(item)}
+                              className="admin-btn admin-btn--ghost"
+                              style={{ padding: "4px 8px" }}
+                              title="Edit"
+                            >
+                              <Pencil size={13} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(item.id, item.name)}
+                              className="admin-btn admin-btn--danger"
+                              style={{ padding: "4px 8px" }}
+                              title="Delete"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-          </div>
-
-          {/* Feature bullets */}
-          <div className="admin-form-group">
-            <label className="admin-label">Feature Bullets <span style={{ color: "#6b7280", textTransform: "none", fontSize: 10 }}>(one per line)</span></label>
-            <textarea
-              className="admin-textarea" rows={4}
-              value={form.featureBulletsText}
-              onChange={e => updateForm("featureBulletsText", e.target.value)}
-              placeholder={"Camera package included\nOn-set support available\n4K RAW output"}
-            />
-          </div>
-
-          {/* ── Media uploads: Image + Video side by side ── */}
-          <div className="admin-form-grid-2">
-            {/* Thumbnail Image */}
-            <div className="admin-form-group">
-              <label className="admin-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <ImagePlus style={{ width: 13, height: 13 }} /> Thumbnail Image
-              </label>
-              <label className="admin-dropzone">
-                {preview
-                  ? <img src={preview} alt="preview" />
-                  : <ImagePlus style={{ width: 28, height: 28, color: "#4b5563" }} />}
-                <span>{form.file ? form.file.name : (form.imageUrl ? "Click to change image" : "Click to select image")}</span>
-                <input type="file" accept="image/*" style={{ display: "none" }} onChange={handleFile} />
-              </label>
-              {loading && progress > 0 && (
-                <div className="admin-progress-track" style={{ marginTop: 8 }}>
-                  <div className="admin-progress-fill" style={{ width: `${progress}%` }} />
-                </div>
-              )}
-            </div>
-
-            {/* Demo Video */}
-            <div className="admin-form-group">
-              <label className="admin-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <Video style={{ width: 13, height: 13 }} /> Demo Video <span style={{ color: "#6b7280", textTransform: "none", fontSize: 10 }}>(optional)</span>
-              </label>
-              <label className="admin-dropzone">
-                {videoPreview ? (
-                  <video src={videoPreview} muted playsInline style={{ height: 120, borderRadius: 8, background: "#000" }} />
-                ) : (
-                  <Video style={{ width: 28, height: 28, color: "#4b5563" }} />
-                )}
-                <span>{form.videoFile ? form.videoFile.name : (form.videoUrl ? "Click to change video" : "Click to select video")}</span>
-                <input type="file" accept="video/*" style={{ display: "none" }} onChange={handleVideoFile} />
-              </label>
-              {loading && videoProgress > 0 && (
-                <div className="admin-progress-track" style={{ marginTop: 8 }}>
-                  <div className="admin-progress-fill" style={{ width: `${videoProgress}%`, background: "linear-gradient(90deg, #a855f7, #c084fc)" }} />
-                </div>
-              )}
-              {/* Clear existing video */}
-              {form.videoUrl && !form.videoFile && (
-                <button
-                  type="button"
-                  style={{ marginTop: 6, fontSize: 11, color: "#f87171", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
-                  onClick={() => { updateForm("videoUrl", ""); setVideoPreview(null); }}
-                >
-                  ✕ Remove existing video
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Featured toggle */}
-          <div className="admin-featured-row">
-            <label>
-              <input
-                type="checkbox"
-                checked={form.featured}
-                onChange={e => updateForm("featured", e.target.checked)}
-              />
-              <Star style={{ width: 14, height: 14 }} />
-              Show as homepage featured equipment
-            </label>
-            <input
-              className="admin-input"
-              style={{ flex: 1, minWidth: 200, maxWidth: 280 }}
-              value={form.featuredLabel}
-              onChange={e => updateForm("featuredLabel", e.target.value)}
-              placeholder="Optional badge — e.g. 50% OFF"
-            />
-          </div>
-
-          {/* Submit */}
-          <div style={{ display: "flex", gap: 10 }}>
-            <button type="submit" className="admin-btn admin-btn--primary" disabled={loading}>
-              {loading ? <Loader2 style={{ width: 15, height: 15, animation: "spin 1s linear infinite" }} /> : <CheckCircle2 style={{ width: 15, height: 15 }} />}
-              {loading ? "Saving…" : editId ? "Update Equipment" : "Add Equipment"}
-            </button>
-            {editId && (
-              <button type="button" className="admin-btn admin-btn--ghost" onClick={clearForm}>
-                <XCircle style={{ width: 15, height: 15 }} /> Cancel
-              </button>
-            )}
-          </div>
-        </form>
-      </div>
-
-      {/* ── Equipment list ── */}
-      <div className="admin-table-card">
-        <div className="admin-table-header">
-          <h2>All Equipment</h2>
-          <span>{items.length} item{items.length !== 1 ? "s" : ""}</span>
+          )}
         </div>
-
-        {loadingItems ? (
-          <div className="admin-empty">
-            <Loader2 style={{ width: 24, height: 24, animation: "spin 1s linear infinite" }} />
-            <p>Loading equipment…</p>
-          </div>
-        ) : items.length === 0 ? (
-          <div className="admin-empty">
-            <Camera style={{ width: 36, height: 36 }} />
-            <p>No equipment yet. Use the form above to add your first item.</p>
-          </div>
-        ) : (
-          items.map(item => (
-            <div key={item.id} className="admin-equip-item">
-              {item.imageUrl
-                ? <img src={item.imageUrl} alt={item.name} className="admin-equip-item__img" />
-                : <div className="admin-equip-item__img-placeholder"><Camera style={{ width: 18, height: 18 }} /></div>
-              }
-              <div className="admin-equip-item__info">
-                <div className="admin-equip-item__name">{item.name}</div>
-                <div className="admin-equip-item__cat">{item.category}</div>
-                <div className="admin-equip-item__badges">
-                  {item.featured && (
-                    <span className="admin-badge admin-badge--amber">
-                      <Star style={{ width: 9, height: 9 }} /> Featured
-                    </span>
-                  )}
-                  {item.videoUrl && (
-                    <span className="admin-badge admin-badge--video">
-                      <Play style={{ width: 9, height: 9 }} /> Video
-                    </span>
-                  )}
-                  {item.rentalPrice && (
-                    <span className="admin-badge admin-badge--green">
-                      ₹{item.rentalPrice}/{item.rentalUnit || "day"}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="admin-equip-item__actions">
-                <button onClick={() => handleEdit(item)} className="admin-icon-btn admin-icon-btn--edit" title="Edit">
-                  <Pencil style={{ width: 14, height: 14 }} />
-                </button>
-                <button onClick={() => handleDelete(item.id, item.name)} className="admin-icon-btn admin-icon-btn--delete" title="Delete">
-                  <Trash2 style={{ width: 14, height: 14 }} />
-                </button>
-              </div>
-            </div>
-          ))
-        )}
       </div>
     </AdminLayout>
   );

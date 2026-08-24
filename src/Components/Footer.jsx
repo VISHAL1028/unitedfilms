@@ -1,126 +1,52 @@
 import { Link } from 'react-router-dom';
+import { contactInfo } from '@/lib/site-media';
 
-const footerLinks = {
-  services: [
-    { name: 'Film Production', href: '/#services' },
-    { name: 'Post Production', href: '/#services' },
-    { name: 'Film Restoration', href: '/#services' },
-    { name: 'Equipment Rental', href: '/equipment' },
-  ],
-  company: [
-    { name: 'About Us', href: '/#about' },
-    { name: 'Our Work', href: '/our-work' },
-    { name: 'Contact', href: '/#contact' },
-    { name: 'Admin Login', href: '/login' },
-  ],
-  resources: [
-    { name: 'Phantom Flex 4K', href: '/equipment' },
-    { name: 'Pricing & Rental', href: '/equipment' },
-    { name: '360° 3D Production', href: '/#services' },
-    { name: 'Flame Relighting', href: '/#services' },
-  ],
-};
+const SECTIONS = [
+  { to: '/our-work', label: 'Our Work' },
+  { to: '/equipment', label: 'Equipment' },
+  { to: '/film-restoration', label: 'Film Restoration' },
+  { to: '/special-rental', label: 'Special Rental' },
+  { to: '/vr-360-3d', label: '360 3D Production' },
+  { to: '/about', label: 'About Me' },
+  { to: '/production', label: 'Production' },
+  { to: '/post-production', label: 'Post production' },
+  { to: '/prices', label: 'Prices' },
+  { to: '/contact', label: 'Contact US & Europe' },
+];
 
-export const Footer = () => {
-  const year = new Date().getFullYear();
-
-  return (
-    <footer style={{ backgroundColor: 'var(--card)', borderTop: '1px solid var(--border)' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '4rem 2rem 2rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '3rem', marginBottom: '3.5rem' }}>
-
-          {/* Brand */}
-          <div style={{ gridColumn: 'span 2' }}>
-            <Link to="/" style={{
-              fontFamily: "'Instrument Serif', Georgia, serif",
-              fontSize: '1.5rem',
-              fontWeight: 400,
-              color: 'var(--foreground)',
-              textDecoration: 'none',
-              display: 'inline-block',
-              marginBottom: '1rem',
-              letterSpacing: '-0.01em',
-            }}>
-              United<span style={{ color: 'var(--primary)' }}>Films</span>
-            </Link>
-            <p style={{
-              fontSize: '0.8125rem',
-              color: 'var(--muted-foreground)',
-              lineHeight: 1.7,
-              maxWidth: '320px',
-              margin: 0,
-            }}>
-              World-class film production, high-speed Phantom camera rentals, and professional post-production services. Bringing cinematic excellence to every project.
-            </p>
-          </div>
-
-          {/* Links: Services */}
-          <div>
-            <p className="eyebrow" style={{ marginBottom: '1rem' }}>Services</p>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              {footerLinks.services.map((link) => (
-                <li key={link.name}>
-                  <Link to={link.href} style={{ fontSize: '0.8125rem', color: 'var(--muted-foreground)', textDecoration: 'none', transition: 'color 0.2s' }}
-                    onMouseEnter={e => e.target.style.color = 'var(--foreground)'}
-                    onMouseLeave={e => e.target.style.color = 'var(--muted-foreground)'}>
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Links: Company */}
-          <div>
-            <p className="eyebrow" style={{ marginBottom: '1rem' }}>Company</p>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              {footerLinks.company.map((link) => (
-                <li key={link.name}>
-                  <Link to={link.href} style={{ fontSize: '0.8125rem', color: 'var(--muted-foreground)', textDecoration: 'none', transition: 'color 0.2s' }}
-                    onMouseEnter={e => e.target.style.color = 'var(--foreground)'}
-                    onMouseLeave={e => e.target.style.color = 'var(--muted-foreground)'}>
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Links: Resources */}
-          <div>
-            <p className="eyebrow" style={{ marginBottom: '1rem' }}>Resources</p>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              {footerLinks.resources.map((link) => (
-                <li key={link.name}>
-                  <Link to={link.href} style={{ fontSize: '0.8125rem', color: 'var(--muted-foreground)', textDecoration: 'none', transition: 'color 0.2s' }}
-                    onMouseEnter={e => e.target.style.color = 'var(--foreground)'}
-                    onMouseLeave={e => e.target.style.color = 'var(--muted-foreground)'}>
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Bottom bar */}
-        <div style={{
-          borderTop: '1px solid var(--border)',
-          paddingTop: '1.75rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1rem',
-        }}>
-          <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: '0.6875rem', color: 'var(--muted-foreground)', margin: 0 }}>
-            © {year} United Films. All rights reserved.
-          </p>
-          <a href="tel:+13232289022" style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)', textDecoration: 'none', fontVariantNumeric: 'tabular-nums' }}>
-            1 (323) 228-9022
-          </a>
-        </div>
+export const Footer = () => (
+  <footer className="mt-24 border-t border-border" style={{ backgroundColor: 'var(--color-secondary, oklch(0.2 0.004 20))' }}>
+    <div className="mx-auto grid max-w-[1200px] gap-10 px-6 py-14 md:grid-cols-3">
+      <div>
+        <p className="font-display text-2xl font-bold">UnitedFilms.com</p>
+        <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
+          Motion picture production, post production and film restoration. 20+ years of
+          experience in production and post production.
+        </p>
       </div>
-    </footer>
-  );
-};
+      <div>
+        <h2 className="text-sm font-semibold uppercase tracking-[0.14em]">Call us</h2>
+        <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+          <li>USA <a className="text-foreground hover:text-primary" href={contactInfo.phoneHref}>{contactInfo.phone}</a></li>
+          <li>EU Czech Republic — David +420 605 450 595</li>
+          <li>Germany — Mathias Janhshen +420 737 900 058</li>
+          <li>Free consulting <a className="text-foreground hover:text-primary" href={contactInfo.consultingHref}>{contactInfo.consulting}</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2 className="text-sm font-semibold uppercase tracking-[0.14em]">Sections</h2>
+        <ul className="mt-4 grid grid-cols-2 gap-y-2 text-sm text-muted-foreground">
+          {SECTIONS.map((item) => (
+            <li key={item.to}>
+              <Link className="hover:text-primary" to={item.to}>{item.label}</Link>
+            </li>
+          ))}
+          <li><Link className="hover:text-primary" to="/login">Admin Login</Link></li>
+        </ul>
+      </div>
+    </div>
+    <div className="border-t border-border px-6 py-5 text-center text-xs uppercase tracking-[0.18em] text-muted-foreground">
+      {`\u00A9 ${new Date().getFullYear()} United Films \u2014 Vit Kobliha`}
+    </div>
+  </footer>
+);

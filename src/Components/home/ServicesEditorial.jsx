@@ -13,7 +13,7 @@ export function ServicesEditorial() {
         <div style={{ marginBottom: '3.5rem' }}>
           <p className="eyebrow" style={{ marginBottom: '1rem' }}>Our Services</p>
           <h2 style={{
-            fontFamily: "'Instrument Serif', Georgia, serif",
+            fontFamily: "'Poppins', ui-sans-serif, system-ui, sans-serif",
             fontSize: 'clamp(1.75rem, 4vw, 3rem)',
             fontWeight: 400,
             letterSpacing: '-0.02em',
@@ -72,7 +72,7 @@ export function ServicesEditorial() {
 
               {/* Title */}
               <h3 style={{
-                fontFamily: "'Instrument Serif', Georgia, serif",
+                fontFamily: "'Poppins', ui-sans-serif, system-ui, sans-serif",
                 fontSize: '1.25rem',
                 fontWeight: 400,
                 color: 'var(--foreground)',

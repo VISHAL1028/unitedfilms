@@ -20,7 +20,7 @@ export function FooterEditorial() {
       }}>
         {/* Wordmark */}
         <Link to="/" style={{
-          fontFamily: "'Instrument Serif', Georgia, serif",
+          fontFamily: "'Poppins', ui-sans-serif, system-ui, sans-serif",
           fontSize: '1rem',
           fontWeight: 400,
           color: 'var(--foreground)',

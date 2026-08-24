@@ -53,7 +53,7 @@ export function EquipmentEditorial() {
           {/* Right — content */}
           <div>
             <h2 style={{
-              fontFamily: "'Instrument Serif', Georgia, serif",
+              fontFamily: "'Poppins', ui-sans-serif, system-ui, sans-serif",
               fontSize: 'clamp(1.5rem, 3vw, 2.25rem)',
               fontWeight: 400,
               letterSpacing: '-0.02em',
@@ -131,7 +131,7 @@ export function EquipmentEditorial() {
               gap: '0.75rem',
             }}>
               <span style={{
-                fontFamily: "'Instrument Serif', Georgia, serif",
+                fontFamily: "'Poppins', ui-sans-serif, system-ui, sans-serif",
                 fontSize: '1.75rem',
                 color: 'var(--foreground)',
                 letterSpacing: '-0.02em',

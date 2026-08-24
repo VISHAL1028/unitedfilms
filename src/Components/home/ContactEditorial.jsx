@@ -66,7 +66,7 @@ export function ContactEditorial() {
         <div style={{ marginBottom: '3rem' }}>
           <p className="eyebrow" style={{ marginBottom: '0.75rem' }}>Get in Touch</p>
           <h2 style={{
-            fontFamily: "'Instrument Serif', Georgia, serif",
+            fontFamily: "'Poppins', ui-sans-serif, system-ui, sans-serif",
             fontSize: 'clamp(1.75rem, 4vw, 3rem)',
             fontWeight: 400,
             letterSpacing: '-0.02em',
@@ -120,7 +120,7 @@ export function ContactEditorial() {
                     fontSize: '1rem',
                     color: 'var(--foreground)',
                     textDecoration: 'none',
-                    fontFamily: "'Instrument Serif', Georgia, serif",
+                    fontFamily: "'Poppins', ui-sans-serif, system-ui, sans-serif",
                     letterSpacing: '-0.01em',
                   }}>
                     {c.value}
@@ -130,7 +130,7 @@ export function ContactEditorial() {
                     fontSize: '1rem',
                     color: 'var(--foreground)',
                     margin: 0,
-                    fontFamily: "'Instrument Serif', Georgia, serif",
+                    fontFamily: "'Poppins', ui-sans-serif, system-ui, sans-serif",
                     letterSpacing: '-0.01em',
                   }}>
                     {c.value}
@@ -158,7 +158,7 @@ export function ContactEditorial() {
             backgroundColor: 'var(--background)',
           }}>
             <p style={{
-              fontFamily: "'Instrument Serif', Georgia, serif",
+              fontFamily: "'Poppins', ui-sans-serif, system-ui, sans-serif",
               fontSize: '1.125rem',
               fontWeight: 400,
               color: 'var(--foreground)',

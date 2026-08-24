@@ -3,10 +3,41 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+    /* ── Cinema archive fonts ── */
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+    --font-script: 'Playfair Display', Georgia, serif;
     --font-heading: var(--font-display);
-    /* ── Paper & Ink editorial fonts ── */
-    --font-sans: 'Inter', system-ui, sans-serif;
-    --font-display: 'Instrument Serif', Georgia, serif;
+    /* ── Radius ── */
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 8px);
+    /* ── Colors ── */
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-rule: var(--rule);
+    --color-nav: var(--nav);
+    --color-nav-foreground: var(--nav-foreground);
+    /* Sidebar (kept for admin) */
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -15,144 +46,118 @@
     --color-sidebar-primary: var(--sidebar-primary);
     --color-sidebar-foreground: var(--sidebar-foreground);
     --color-sidebar: var(--sidebar);
+    /* Charts (kept for admin) */
     --color-chart-5: var(--chart-5);
     --color-chart-4: var(--chart-4);
     --color-chart-3: var(--chart-3);
     --color-chart-2: var(--chart-2);
     --color-chart-1: var(--chart-1);
-    --color-ring: var(--ring);
-    --color-input: var(--input);
-    --color-border: var(--border);
-    --color-destructive: var(--destructive);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-accent: var(--accent);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-muted: var(--muted);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-popover: var(--popover);
-    --color-card-foreground: var(--card-foreground);
-    --color-card: var(--card);
-    --color-foreground: var(--foreground);
-    --color-background: var(--background);
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
 }
 
 /* ═══════════════════════════════════════════════
-   PAPER & INK — Editorial Light (default)
-   cream paper / warm off-white surfaces / ink text / oxblood accent
+   CINEMA DARK — United Films archive palette
+   deep cinema black / crimson primary / cyan accent
 ═══════════════════════════════════════════════ */
 :root {
-    --background:        #f5f3ee;   /* cream paper */
-    --foreground:        #2d2d2d;   /* warm ink */
+  --radius: 0.25rem;
+  /* Deep cinema black stage */
+  --background: oklch(0.11 0.004 20);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.15 0.004 20);
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.15 0.004 20);
+  --popover-foreground: oklch(0.98 0 0);
+  /* Signature crimson of the UnitedFilms buttons and headlines */
+  --primary: oklch(0.48 0.196 25.6);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.2 0.004 20);
+  --secondary-foreground: oklch(0.98 0 0);
+  --muted: oklch(0.19 0.004 20);
+  --muted-foreground: oklch(0.72 0.006 20);
+  /* Workshop-badge cyan */
+  --accent: oklch(0.79 0.093 202);
+  --accent-foreground: oklch(0.14 0.004 20);
+  --destructive: oklch(0.55 0.21 27);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(1 0 0 / 14%);
+  --input: oklch(1 0 0 / 18%);
+  --ring: oklch(0.48 0.196 25.6);
+  /* Rule band: bright white top/bottom borders */
+  --rule: oklch(0.99 0 0);
+  /* Sticky nav: white bar with dark text */
+  --nav: oklch(0.99 0 0);
+  --nav-foreground: oklch(0.14 0.004 20);
 
-    --card:              #e8e4dd;   /* warm off-white surface */
-    --card-foreground:   #2d2d2d;
+  /* Charts — kept for admin */
+  --chart-1: oklch(0.48 0.196 25.6);
+  --chart-2: oklch(0.72 0.006 20);
+  --chart-3: oklch(0.55 0.1 160);
+  --chart-4: oklch(0.55 0.1 280);
+  --chart-5: oklch(0.6 0.15 50);
 
-    --popover:           #f5f3ee;
-    --popover-foreground:#2d2d2d;
-
-    /* Single restrained accent: oxblood-gold */
-    --primary:           #7c3d12;   /* oxblood */
-    --primary-foreground:#f5f3ee;
-
-    /* Neutral secondary — warm charcoal */
-    --secondary:         #4a4540;
-    --secondary-foreground:#f5f3ee;
-
-    --muted:             #ede9e2;   /* parchment */
-    --muted-foreground:  #7a756e;   /* warm grey ink */
-
-    --accent:            #ede9e2;
-    --accent-foreground: #2d2d2d;
-
-    --destructive:       #9b2c2c;
-
-    /* Hairline rules — editorial precision */
-    --border:            rgba(45, 45, 45, 0.14);
-    --input:             rgba(45, 45, 45, 0.10);
-    --ring:              #7c3d12;
-
-    --chart-1: #7c3d12;
-    --chart-2: #4a4540;
-    --chart-3: #5a6b5a;
-    --chart-4: #5b4e6b;
-    --chart-5: #7a5238;
-
-    /* No border radius — sharp editorial corners */
-    --radius: 0rem;
-
-    --sidebar:                 #ede9e2;
-    --sidebar-foreground:      #2d2d2d;
-    --sidebar-primary:         #7c3d12;
-    --sidebar-primary-foreground:#f5f3ee;
-    --sidebar-accent:          #e0dbd2;
-    --sidebar-accent-foreground:#2d2d2d;
-    --sidebar-border:          rgba(45, 45, 45, 0.10);
-    --sidebar-ring:            #7c3d12;
+  /* Sidebar — kept for admin panel */
+  --sidebar: oklch(0.12 0.004 20);
+  --sidebar-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.48 0.196 25.6);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.18 0.004 20);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
+  --sidebar-border: oklch(1 0 0 / 6%);
+  --sidebar-ring: oklch(0.48 0.196 25.6);
 }
 
 /* ═══════════════════════════════════════════════
-   PAPER & INK — Editorial Dark
-   dark paper / warm near-white text / same oxblood accent
+   CINEMA DARK — Dark mode variant (same palette, slightly warmer)
 ═══════════════════════════════════════════════ */
 .dark {
-    --background:        #0d0d0d;   /* deep black */
-    --foreground:        #e8e4dd;   /* warm off-white */
+  /* Slightly deeper than :root for true dark-on-dark toggle */
+  --background: oklch(0.09 0.004 20);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.13 0.004 20);
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.13 0.004 20);
+  --popover-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.52 0.196 25.6);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.18 0.004 20);
+  --secondary-foreground: oklch(0.98 0 0);
+  --muted: oklch(0.17 0.004 20);
+  --muted-foreground: oklch(0.68 0.006 20);
+  --accent: oklch(0.82 0.093 202);
+  --accent-foreground: oklch(0.14 0.004 20);
+  --destructive: oklch(0.55 0.21 27);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.52 0.196 25.6);
+  --rule: oklch(0.99 0 0);
+  --nav: oklch(0.99 0 0);
+  --nav-foreground: oklch(0.14 0.004 20);
 
-    --card:              #181714;   /* dark surface */
-    --card-foreground:   #e8e4dd;
+  --chart-1: oklch(0.52 0.196 25.6);
+  --chart-2: oklch(0.68 0.006 20);
+  --chart-3: oklch(0.6 0.1 160);
+  --chart-4: oklch(0.6 0.1 280);
+  --chart-5: oklch(0.65 0.15 50);
 
-    --popover:           #181714;
-    --popover-foreground:#e8e4dd;
-
-    --primary:           #c4622c;   /* warmer oxblood on dark */
-    --primary-foreground:#0d0d0d;
-
-    --secondary:         #a09890;
-    --secondary-foreground:#0d0d0d;
-
-    --muted:             #1e1c19;
-    --muted-foreground:  #8a857e;
-
-    --accent:            #1e1c19;
-    --accent-foreground: #e8e4dd;
-
-    --destructive:       #d45a5a;
-
-    --border:            rgba(232, 228, 221, 0.10);
-    --input:             rgba(232, 228, 221, 0.08);
-    --ring:              #c4622c;
-
-    --chart-1: #c4622c;
-    --chart-2: #a09890;
-    --chart-3: #7a9b7a;
-    --chart-4: #9080a8;
-    --chart-5: #c47a5a;
-
-    --sidebar:                 #111009;
-    --sidebar-foreground:      #e8e4dd;
-    --sidebar-primary:         #c4622c;
-    --sidebar-primary-foreground:#0d0d0d;
-    --sidebar-accent:          #1e1c19;
-    --sidebar-accent-foreground:#e8e4dd;
-    --sidebar-border:          rgba(232, 228, 221, 0.08);
-    --sidebar-ring:            #c4622c;
+  --sidebar: oklch(0.10 0.004 20);
+  --sidebar-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.52 0.196 25.6);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.16 0.004 20);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
+  --sidebar-border: oklch(1 0 0 / 6%);
+  --sidebar-ring: oklch(0.52 0.196 25.6);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: var(--color-border);
   }
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
     font-weight: 400;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -160,14 +165,14 @@
     letter-spacing: 0em;
   }
   html {
-    @apply font-sans;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
     transition: background-color 0.4s ease, color 0.4s ease;
   }
-  /* Instrument Serif — display headings */
+  /* Poppins — cinema display headings */
   h1, h2, h3, h4, .font-display {
-    font-family: 'Instrument Serif', Georgia, serif;
+    font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
     letter-spacing: -0.01em;
-    font-weight: 400; /* Instrument Serif is a regular-weight serif */
   }
   /* Small caps eyebrow labels */
   .eyebrow {
@@ -178,6 +183,80 @@
     text-transform: uppercase;
     color: var(--muted-foreground);
   }
+}
+
+/* ═══════════════════════════════════════════════
+   ARCHIVE UTILITY CLASSES — Cinema editorial
+═══════════════════════════════════════════════ */
+
+/* Italic Playfair Display in crimson — for taglines */
+.script-line {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  color: var(--color-primary);
+}
+
+/* Double border band — white top + bottom borders like the archive title block */
+.rule-band {
+  border-top: 3px solid var(--color-rule, oklch(0.99 0 0));
+  border-bottom: 3px solid var(--color-rule, oklch(0.99 0 0));
+}
+
+/* Spec list — archive-style bordered item list */
+.spec-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.spec-list > li {
+  padding-block: 0.35rem;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-muted-foreground);
+  font-size: 0.9375rem;
+}
+
+/* Site section wrapper */
+.site-section {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 2.5rem 1.5rem;
+}
+
+/* Contact strip buttons — crimson, bordered */
+.contact-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+.contact-btn-primary:hover { opacity: 0.9; }
+
+.contact-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--color-border);
+  color: var(--color-foreground);
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.contact-btn-outline:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 /* ═══════════════════════════════════════════════

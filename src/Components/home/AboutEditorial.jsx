@@ -51,7 +51,7 @@ export function AboutEditorial() {
           <div>
             <p className="eyebrow" style={{ marginBottom: '1rem' }}>About Us</p>
             <h2 style={{
-              fontFamily: "'Instrument Serif', Georgia, serif",
+              fontFamily: "'Poppins', ui-sans-serif, system-ui, sans-serif",
               fontSize: 'clamp(1.5rem, 3vw, 2.25rem)',
               fontWeight: 400,
               letterSpacing: '-0.02em',
@@ -97,7 +97,7 @@ export function AboutEditorial() {
                     {s.label}
                   </p>
                   <p style={{
-                    fontFamily: "'Instrument Serif', Georgia, serif",
+                    fontFamily: "'Poppins', ui-sans-serif, system-ui, sans-serif",
                     fontSize: '1.5rem',
                     fontWeight: 400,
                     color: 'var(--foreground)',
@@ -127,7 +127,7 @@ export function AboutEditorial() {
               borderBottom: '1px solid var(--border)',
             }}>
               <h3 style={{
-                fontFamily: "'Instrument Serif', Georgia, serif",
+                fontFamily: "'Poppins', ui-sans-serif, system-ui, sans-serif",
                 fontSize: '1.0625rem',
                 fontWeight: 400,
                 color: 'var(--foreground)',

@@ -3,6 +3,8 @@ import {
   collection,
   addDoc,
   updateDoc,
+  setDoc,
+  getDoc,
   deleteDoc,
   getDocs,
   doc,
@@ -13,13 +15,20 @@ import {
   limit,
 } from "firebase/firestore";
 
-// EQUIPMENT
+// ─── EQUIPMENT ───
 
 export const saveEquipment = (data) =>
-  addDoc(collection(db, "equipment"), { ...data, createdAt: serverTimestamp() });
+  addDoc(collection(db, "equipment"), {
+    ...data,
+    listed: data.listed !== undefined ? data.listed : true,
+    createdAt: serverTimestamp(),
+  });
 
 export const updateEquipment = (id, data) =>
   updateDoc(doc(db, "equipment", id), data);
+
+export const toggleEquipmentListing = (id, listed) =>
+  updateDoc(doc(db, "equipment", id), { listed });
 
 export const deleteEquipment = (id) =>
   deleteDoc(doc(db, "equipment", id));
@@ -27,11 +36,13 @@ export const deleteEquipment = (id) =>
 export const setEquipmentFeatured = (id, featured) =>
   updateDoc(doc(db, "equipment", id), { featured });
 
-export const getAllEquipment = async () => {
+export const getAllEquipment = async (includeDelisted = false) => {
   const snap = await getDocs(
     query(collection(db, "equipment"), orderBy("createdAt", "desc"))
   );
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  if (includeDelisted) return list;
+  return list.filter((i) => i.listed !== false);
 };
 
 export const getFeaturedEquipment = async () => {
@@ -42,7 +53,45 @@ export const getFeaturedEquipment = async () => {
   return featured ? { id: featured.id, ...featured.data() } : null;
 };
 
-// CONTACT MESSAGES
+// ─── SPECIAL RENTAL & PRICING CMS ───
+
+export const getSpecialRentalConfig = async () => {
+  try {
+    const snap = await getDoc(doc(db, "settings", "specialRental"));
+    if (snap.exists()) return snap.data();
+  } catch (err) {
+    console.error("Error fetching special rental settings:", err);
+  }
+  return null;
+};
+
+export const saveSpecialRentalConfig = async (data) => {
+  return setDoc(
+    doc(db, "settings", "specialRental"),
+    { ...data, updatedAt: serverTimestamp() },
+    { merge: true }
+  );
+};
+
+export const getPricingConfig = async () => {
+  try {
+    const snap = await getDoc(doc(db, "settings", "pricingRates"));
+    if (snap.exists()) return snap.data();
+  } catch (err) {
+    console.error("Error fetching pricing settings:", err);
+  }
+  return null;
+};
+
+export const savePricingConfig = async (data) => {
+  return setDoc(
+    doc(db, "settings", "pricingRates"),
+    { ...data, updatedAt: serverTimestamp() },
+    { merge: true }
+  );
+};
+
+// ─── CONTACT MESSAGES ───
 
 export const saveMessage = (data) =>
   addDoc(collection(db, "messages"), {

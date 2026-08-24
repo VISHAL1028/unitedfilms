@@ -1,295 +1,335 @@
-import { useState, useEffect, useRef } from 'react';
-import { Search, SlidersHorizontal, X, ListFilter, Play, ArrowUpDown } from 'lucide-react';
-import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
-import { equipment as staticEquipment, categories as staticCategories } from './equipmentData';
+import { useState, useEffect, useMemo } from 'react';
+import { Search, X, SlidersHorizontal, ArrowRight, ShieldCheck } from 'lucide-react';
+import { ContactStrip, PageTitle, Section, SiteShell } from '@/components/site/SiteSection';
+import { ImageGrid, SpecList } from '@/components/site/MediaBlocks';
+import { images } from '@/lib/site-media';
 import { getAllEquipment } from '@/lib/db';
 
-const sortOptions = [
-  { value: 'name-asc', label: 'Name A-Z' },
-  { value: 'name-desc', label: 'Name Z-A' },
-  { value: 'category-asc', label: 'Category A-Z' },
-  { value: 'featured-first', label: 'Featured First' },
+const STATIC_EQUIPMENT = [
+  {
+    id: 'phantom-flex-4k',
+    name: 'Phantom Flex 4K (1000 fps)',
+    category: 'Cameras',
+    description: 'High-speed 4K camera with 2 simultaneous format outputs (standard 24-30 fps + high-speed up to 2000 fps). Includes technician.',
+    image: images.phantomHero,
+    status: 'Available for Rent',
+  },
+  {
+    id: 'arri-master-primes',
+    name: 'ARRI Master Primes (Set of 6)',
+    category: 'Lenses',
+    description: 'T1.3 high-speed cinema prime lens set with outstanding optical performance, flare resistance, and cinematic bokeh.',
+    image: images.equipment[19] || images.phantomHero,
+    status: 'Available for Rent / Sale',
+  },
+  {
+    id: 'dft-scanity',
+    name: 'DFT Scanity Film Scanner 16/35mm',
+    category: 'Scanners & Lab',
+    description: 'State-of-the-art optical capstan scanner delivering pin-sharp 4K/2K resolution scans with gentle film handling.',
+    image: images.equipment[0] || images.phantomHero,
+    status: 'In Facility',
+  },
+  {
+    id: 'phoenix-restoration',
+    name: 'Phoenix Film Restoration Suite',
+    category: 'Grading & VFX',
+    description: 'World-class SMPTE standards automated and interactive digital film restoration with 80TB on-set storage.',
+    image: images.equipment[7] || images.phantomHero,
+    status: 'In Facility',
+  },
+  {
+    id: 'angenieux-optimo-24-290',
+    name: 'Angenieux Optimo Zoom 24-290mm',
+    category: 'Lenses',
+    description: 'Industry benchmark cinema zoom lens with superb optical quality, constant aperture, and robust mechanics.',
+    image: images.equipment[18] || images.phantomHero,
+    status: 'Available for Rent',
+  },
+  {
+    id: 'autodesk-flame-2015',
+    name: 'Autodesk Flame Relighting Workstation',
+    category: 'Grading & VFX',
+    description: 'High-end 3D VFX, finishing, and interactive on-set relighting workstation for rapid look development.',
+    image: images.equipment[9] || images.phantomHero,
+    status: 'Available on Set',
+  },
+  {
+    id: 'christie-laser-dcp',
+    name: 'Christie Laser DCP 4K Projector',
+    category: 'Projectors',
+    description: 'DCI-compliant cinema laser projection system for premium screening rooms and post-production color grading.',
+    image: images.equipment[27] || images.phantomHero,
+    status: 'Available',
+  },
+  {
+    id: 'oconnor-2575',
+    name: "O'Connor 2575B Fluid Head & Tripod",
+    category: 'Support',
+    description: 'Heavy-duty cinema fluid head with stepless counterbalance and ultra-smooth pan/tilt for camera packages up to 90 lbs.',
+    image: images.equipment[35] || images.phantomHero,
+    status: 'Available',
+  },
 ];
 
-/* ── Single equipment card with thumbnail + video toggle ── */
-const EquipmentCard = ({ item }) => {
-  const [playing, setPlaying] = useState(false);
-  const videoRef = useRef(null);
-  const hasVideo = Boolean(item.videoUrl);
+const GRADING = [
+  'DFT Scanity film scanner 16/35',
+  'Nucoda color grading system',
+  'Phoenix film restoration system',
+  'Truelight Baselight 2, Baselight 1, Baselight HD',
+  'Spirit 4K Telecine / Spirit 2K with Bones',
+  'Lasergraphics Director film scanner',
+  'Northlight and Northlight 2 scanners',
+  'Arri Scanner XT, 16/35mm wet gate, 65/70mm',
+  'Arri Laser Recorder / Arri Film Recorder',
+  '2x Imagica scanner',
+  'Facilis 48TB Terrablock system',
+  'Cinevation Cinevator',
+  'Autodesk Flame Premium 2015 / 2014, Flame 2015, Luster, Smoke, Inferno',
+  'Lipsner Smith film cleaner',
+  'Color Master analyser',
+  'Digital Vision Nucoda HD',
+  'Avid Unity 5.1.4 media engine w/ 8TB, 26 fiber client connections',
+  'SAN MP server, 4 seats with dongles',
+];
 
-  const handlePlay = (e) => {
-    e.stopPropagation();
-    setPlaying(true);
-    setTimeout(() => {
-      videoRef.current?.play().catch(() => {});
-    }, 80);
-  };
+const LAB = [
+  '35mm Cinevator',
+  '35mm Model C Bell and Howell printer',
+  '16mm Model C, Schmitzer liquid gate equipped',
+  'Bell and Howell printer 35/16/8mm',
+  'Allen Products ECN-2 processing, 18 fpm at 35mm',
+  'Houston Fearless E-6 processing machine 35/16/8mm, 14 fpm at 35mm',
+  '35/16mm black and white spray machine',
+  'Densitometers, Moviola and Nu-made rewinds, split reels 16mm and 35mm',
+  '16/35 film developing machine — installation and warranty available',
+];
 
-  const handleClose = (e) => {
-    e.stopPropagation();
-    videoRef.current?.pause();
-    setPlaying(false);
-  };
+const PROJECTORS = [
+  'Barco 2K DP90 projector with anamorphic lens',
+  'Sony SRX 350 4K',
+  'Christie CP 2220 with 4K upgrade light engine',
+  'Christie CP 2220',
+  'Christie CP 2000i',
+];
 
-  return (
-    <div className="group bg-card border border-border overflow-hidden flex flex-col transition-colors duration-200 hover:bg-muted/40">
-      {/* Media area */}
-      <div className="relative bg-muted border-b border-border flex items-center justify-center h-56 overflow-hidden">
-        {/* Thumbnail */}
-        <img
-          src={item.imageUrl || item.image}
-          alt={item.name}
-          className={`w-full h-full object-contain p-6 transition-transform duration-300 ${playing ? 'opacity-0 scale-95 pointer-events-none' : 'group-hover:scale-105'}`}
-        />
+const CAMERAS = [
+  'Phantom Flex 4K 1000 fps camera',
+  'Arri Master Primes, set of 6',
+  'Arri Ultra Primes, set of 6',
+  'Angenieux Optimo zoom 24-290mm',
+  'Arri Alura zoom 45-250mm',
+  'Zeiss 2.1 lenses, 4 sets available',
+  'RED lenses, 6 lens set',
+  'Angenieux HR 25-250mm zooms',
+  'Arri 435 film cameras',
+];
 
-        {/* Video */}
-        {hasVideo && (
-          <video
-            ref={videoRef}
-            src={item.videoUrl}
-            muted
-            playsInline
-            loop
-            controls={playing}
-            className={`absolute inset-0 w-full h-full object-cover bg-black transition-opacity duration-300 ${playing ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-          />
-        )}
+const LENSES = [
+  'Angenieux Optimo 17-120, almost brand new — $Call',
+  'Angenieux Optimo 15-40 & 45-120, 2x extender, case',
+  'Angenieux Optimo 28-340',
+  'Angenieux Optimo 17-80 — $33,500',
+  'Angenieux Optimo 17-102 / 56-152',
+  'Angenieux Optimo 16-42 x2, 30-80 x3',
+  'Angenieux 25-250 HR, several available — $16,990 each',
+  'Arri 18-80 Alura, mint with case — $21,500',
+  'Arri 30-80 Alura',
+  'Arri 15.5-45 & 30-80 Alura lightweight zoom pair — $26,500',
+  'Cooke 18-100 T3',
+  'Canon CN-E 30-105 Duclos PL & EF mounts — $14,990',
+  'Canon CN-E 15.5-4.7',
+  'Fujinon 19-90 Cabrio v2, mint with case — $28,500',
+  'Fujinon 19-90 Cabrio v1, 2 available',
+  'Fujinon 19-90 Cabrio & 85-300 pair',
+  'Fujinon HAS18x7.6BRM HD x6, HA13x4.5BERM',
+  'Fuji HA22x7.8BERM, HA22x7.3BERM, HA23x7.6BERD, HA14x4.5BERD',
+  'Canon HJ22x7.6B IASE, XJ95x HD box lens, HJ40x10B IASD',
+];
 
-        {/* Category badge */}
-        <span className="absolute top-4 left-4 px-2.5 py-1 text-[0.625rem] font-medium uppercase tracking-wider bg-background/90 text-foreground border border-border z-10">
-          {item.category}
-        </span>
+const SUPPORT = [
+  "O'Connor 2575B with Ronford standard/baby",
+  "O'Connor 2065 with Ronford standard/baby",
+  'Vinten Vector 70 Osprey Lite pedestal',
+  'Sony SRW-5500 5001, 5002, 5003 + 5001 board',
+  'Sony SRW-5800 5802 & 5803sq',
+  'Sony HDW-M2000/20 HDCam, 10x available',
+  'Sony PDW-F1600, 3x available — $10,950 each',
+  'Sony HDW-1800 / HDW-D1800',
+  'Panasonic AJ-HD1700, 6x available',
+  'Panasonic AJ-HD3700B',
+];
 
-        {/* Featured badge */}
-        {item.featured && (
-          <span className="absolute top-4 right-4 px-2.5 py-1 text-[0.625rem] font-medium uppercase tracking-wider bg-primary text-primary-foreground z-10">
-            Featured
-          </span>
-        )}
-
-        {/* Play button overlay */}
-        {hasVideo && !playing && (
-          <button
-            className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors z-10"
-            onClick={handlePlay}
-            aria-label="Play demo video"
-          >
-            <span className="w-10 h-10 rounded-full bg-background/90 text-foreground flex items-center justify-center border border-border shadow-md">
-              <Play style={{ width: 16, height: 16, marginLeft: 2 }} fill="currentColor" />
-            </span>
-          </button>
-        )}
-
-        {/* Close button */}
-        {hasVideo && playing && (
-          <button
-            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/90 text-foreground border border-border flex items-center justify-center z-20"
-            onClick={handleClose}
-            aria-label="Back to thumbnail"
-          >
-            <X style={{ width: 14, height: 14 }} />
-          </button>
-        )}
-      </div>
-
-      {/* Info */}
-      <div className="p-6 flex flex-col flex-1">
-        <h3 style={{ fontFamily: "'Instrument Serif', Georgia, serif" }} className="text-xl font-normal mb-2 leading-tight text-foreground">
-          {item.name}
-        </h3>
-        <p className="text-xs text-muted-foreground leading-relaxed flex-1">
-          {item.description}
-        </p>
-
-        {/* Video badge indicator */}
-        {hasVideo && (
-          <div className="mt-3 inline-flex items-center gap-1.5 text-[0.625rem] uppercase tracking-wider font-medium text-primary">
-            <Play style={{ width: 9, height: 9 }} fill="currentColor" />
-            Demo video available
-          </div>
-        )}
-
-        <div className="mt-5 pt-4 border-t border-border">
-          <a
-            href="/#contact"
-            className="text-xs font-medium uppercase tracking-widest text-foreground hover:text-primary transition-colors inline-flex items-center gap-2"
-          >
-            Enquire about rental <span>&rarr;</span>
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export const EquipmentPage = () => {
+export default function EquipmentPage() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('name-asc');
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [firestoreEquipment, setFirestoreEquipment] = useState(null);
+  const [dbEquipment, setDbEquipment] = useState([]);
 
   useEffect(() => {
     getAllEquipment()
       .then((data) => {
-        if (data.length > 0) setFirestoreEquipment(data);
+        if (data && data.length > 0) setDbEquipment(data);
       })
       .catch(() => {});
   }, []);
 
-  const equipment = firestoreEquipment ?? staticEquipment;
-  const categories = firestoreEquipment
-    ? ['All', ...Array.from(new Set(firestoreEquipment.map((item) => item.category))).sort()]
-    : staticCategories;
+  const equipmentList = dbEquipment.length > 0 ? dbEquipment : STATIC_EQUIPMENT;
 
-  const normalizedSearch = searchQuery.toLowerCase().trim();
-  const filtered = equipment
-    .filter((item) => {
+  const categories = useMemo(() => {
+    const set = new Set(equipmentList.map((i) => i.category).filter(Boolean));
+    return ['All', ...Array.from(set)];
+  }, [equipmentList]);
+
+  const filtered = useMemo(() => {
+    return equipmentList.filter((item) => {
       const matchCat = activeCategory === 'All' || item.category === activeCategory;
-      const searchable = `${item.name} ${item.description} ${item.category}`.toLowerCase();
-      const matchSearch = !normalizedSearch || searchable.includes(normalizedSearch);
+      const q = searchQuery.toLowerCase();
+      const matchSearch =
+        !searchQuery ||
+        item.name?.toLowerCase().includes(q) ||
+        item.description?.toLowerCase().includes(q) ||
+        item.category?.toLowerCase().includes(q);
       return matchCat && matchSearch;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'name-desc') return b.name.localeCompare(a.name);
-      if (sortBy === 'category-asc') return a.category.localeCompare(b.category) || a.name.localeCompare(a.name);
-      if (sortBy === 'featured-first') return Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || a.name.localeCompare(a.name);
-      return a.name.localeCompare(b.name);
     });
+  }, [equipmentList, activeCategory, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+    <SiteShell>
+      <PageTitle
+        kicker="Buy — trade — sale — rent"
+        title="Equipment"
+        lead="We have professional cinema equipment for rent and sale. Browse available inventory below, make your best offer, or contact us with your custom production package."
+      />
 
-      {/* Hero header */}
-      <section className="pt-28 pb-12 lg:pt-36 lg:pb-16 border-b border-border bg-background">
-        <div className="container mx-auto px-6 lg:px-10 max-w-7xl">
-          <p className="text-[0.625rem] uppercase tracking-widest text-primary mb-4 font-semibold">Equipment Catalogue</p>
-          <h1 style={{ fontFamily: "'Instrument Serif', Georgia, serif" }} className="text-4xl md:text-6xl font-normal mb-4 tracking-tight text-foreground">
-            Our Equipment
-          </h1>
-          <p className="text-sm text-muted-foreground max-w-xl leading-relaxed">
-            Browse professional cinema cameras, lenses, film scanners, projectors, and post-production systems available for rental and production use.
-          </p>
-        </div>
-      </section>
-
-      {/* Sticky Search & Filter bar */}
-      <section className="sticky top-[60px] z-40 bg-background/95 backdrop-blur-md border-b border-border py-4">
-        <div className="container mx-auto px-6 lg:px-10 max-w-7xl">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            {/* Search Input */}
-            <div className="relative w-full lg:w-96">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search equipment..."
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                className="w-full pl-11 pr-10 py-2.5 bg-muted border border-border text-xs text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-foreground"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  aria-label="Clear search"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-
-            {/* Filter Toggle + Item Count */}
-            <div className="flex flex-wrap items-center gap-3">
+      {/* Available Equipment Cards Section */}
+      <Section title="Available Equipment Inventory">
+        {/* Search & Category Filter Bar */}
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => (
               <button
-                onClick={() => setFiltersOpen((open) => !open)}
-                className={`inline-flex items-center gap-2 border px-4 py-2.5 text-xs font-medium uppercase tracking-widest transition-colors ${
-                  filtersOpen
-                    ? 'border-foreground bg-foreground text-background'
-                    : 'border-border bg-card text-foreground hover:border-foreground'
+                key={cat}
+                type="button"
+                onClick={() => setActiveCategory(cat)}
+                className={`border px-4 py-2 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                  activeCategory === cat
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-border bg-card text-muted-foreground hover:border-primary hover:text-foreground'
                 }`}
               >
-                <ListFilter className="w-3.5 h-3.5" />
-                Filter & Sort
+                {cat}
               </button>
-
-              <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
-                <SlidersHorizontal className="w-3.5 h-3.5" />
-                <span>{filtered.length} item{filtered.length !== 1 ? 's' : ''}</span>
-              </div>
-            </div>
+            ))}
           </div>
 
-          {/* Expanded Filter Panel */}
-          {filtersOpen && (
-            <div className="mt-4 border border-border bg-card p-5">
-              <div className="grid gap-5 lg:grid-cols-[1fr_200px] lg:items-end">
-                <div>
-                  <p className="text-[0.625rem] uppercase tracking-widest text-muted-foreground mb-3 font-semibold">Categories</p>
-                  <div className="flex flex-wrap gap-2">
-                    {categories.map((cat) => (
-                      <button
-                        key={cat}
-                        onClick={() => setActiveCategory(cat)}
-                        className={`px-3 py-1.5 text-xs font-medium uppercase tracking-wider transition-colors ${
-                          activeCategory === cat
-                            ? 'bg-foreground text-background border border-foreground'
-                            : 'bg-muted text-muted-foreground border border-border hover:text-foreground hover:border-foreground'
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    ))}
+          <div className="relative w-full md:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+            <input
+              type="text"
+              placeholder="Search equipment..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full border border-border bg-card py-2 pl-9 pr-8 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Equipment Cards Grid */}
+        {filtered.length === 0 ? (
+          <div className="border border-border bg-card p-12 text-center text-muted-foreground">
+            <p className="text-sm">No equipment found matching "{searchQuery}".</p>
+            <button
+              type="button"
+              onClick={() => { setActiveCategory('All'); setSearchQuery(''); }}
+              className="mt-4 inline-block border border-primary px-4 py-2 text-xs font-semibold uppercase tracking-wider text-primary hover:bg-primary hover:text-primary-foreground"
+            >
+              Clear filters
+            </button>
+          </div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {filtered.map((item) => (
+              <div
+                key={item.id}
+                className="group flex flex-col overflow-hidden border border-border bg-card transition-all hover:border-primary/60"
+              >
+                <div className="relative aspect-4/3 overflow-hidden bg-black/40">
+                  <img
+                    src={item.imageUrl || item.image || images.phantomHero}
+                    alt={item.name}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <span className="absolute left-2.5 top-2.5 bg-black/80 px-2 py-0.5 text-[0.6875rem] font-semibold uppercase tracking-wider text-accent border border-border">
+                    {item.category || 'Gear'}
+                  </span>
+                </div>
+
+                <div className="flex flex-1 flex-col p-4">
+                  <h3 className="font-display text-base font-bold text-foreground group-hover:text-primary transition-colors">
+                    {item.name}
+                  </h3>
+                  <p className="mt-2 line-clamp-3 flex-1 text-xs leading-relaxed text-muted-foreground">
+                    {item.description}
+                  </p>
+
+                  <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-3">
+                    <span className="text-[0.6875rem] font-medium text-accent flex items-center gap-1">
+                      <ShieldCheck size={13} /> {item.status || 'Available'}
+                    </span>
+                    <a
+                      href="/contact"
+                      className="inline-flex items-center gap-1 text-[0.6875rem] font-semibold uppercase tracking-wider text-primary hover:underline"
+                    >
+                      Enquire <ArrowRight size={12} />
+                    </a>
                   </div>
                 </div>
-
-                <div>
-                  <p className="text-[0.625rem] uppercase tracking-widest text-muted-foreground mb-2 font-semibold">Sort By</p>
-                  <select
-                    value={sortBy}
-                    onChange={(event) => setSortBy(event.target.value)}
-                    className="w-full bg-muted border border-border p-2 text-xs text-foreground outline-none"
-                  >
-                    {sortOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
               </div>
-            </div>
-          )}
+            ))}
+          </div>
+        )}
+      </Section>
 
+      <Section>
+        <ContactStrip />
+      </Section>
+
+      {/* Comprehensive Archive Spec Lists */}
+      <Section title="Color grading, special effects & scanning">
+        <div className="grid gap-10 md:grid-cols-2">
+          <SpecList items={GRADING} />
+          <SpecList items={LAB} />
         </div>
-      </section>
+      </Section>
 
-      <section className="py-16">
-        <div className="container mx-auto px-6 lg:px-10 max-w-7xl">
-          {filtered.length === 0 ? (
-            <div className="text-center py-24">
-              <p className="text-gray-400 text-lg mb-4">No equipment found for your search.</p>
-              <button
-                onClick={clearFilters}
-                className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-sm"
-              >
-                Clear filters
-              </button>
-            </div>
-          ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {filtered.map((item) => (
-                <EquipmentCard key={item.id} item={item} />
-              ))}
-            </div>
-          )}
+      <Section title="Cameras & lenses">
+        <div className="grid gap-10 md:grid-cols-2">
+          <SpecList items={CAMERAS} />
+          <SpecList items={LENSES} />
         </div>
-      </section>
+      </Section>
 
-      <Footer />
-    </div>
+      <Section title="Projectors, heads & decks">
+        <div className="grid gap-10 md:grid-cols-2">
+          <SpecList items={PROJECTORS} />
+          <SpecList items={SUPPORT} />
+        </div>
+      </Section>
+
+      {/* Archive Inventory Photos */}
+      <Section title="Inventory photos">
+        <ImageGrid images={images.equipment} alt="Equipment for sale" columns={4} />
+      </Section>
+    </SiteShell>
   );
-};
-
-export default EquipmentPage;
+}

@@ -36,7 +36,7 @@ export function Masthead() {
 
           {/* Wordmark */}
           <Link to="/" style={{
-            fontFamily: "'Instrument Serif', Georgia, serif",
+            fontFamily: "'Poppins', ui-sans-serif, system-ui, sans-serif",
             fontSize: '1.2rem',
             fontWeight: 400,
             letterSpacing: '-0.01em',

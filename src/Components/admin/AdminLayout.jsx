@@ -30,6 +30,11 @@ const NAV_ITEMS = [
     label: "Equipment",
   },
   {
+    to: "/admin/rentals",
+    icon: Film,
+    label: "Special Rentals",
+  },
+  {
     to: "/admin/works",
     icon: Clapperboard,
     label: "Our Work",
