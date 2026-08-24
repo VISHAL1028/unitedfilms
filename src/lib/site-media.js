@@ -70,11 +70,7 @@ export const images = {
 };
 
 export const clips = {
-  hero: {
-    src: '/archive/hero-4k.mp4',
-    poster: '/archive/img-86faa472-b5b6-4f5f-b278-ca7332a676dd.jpg',
-    label: 'Phantom Flex 4K & Flame Ultra HD Reel',
-  },
+  hero: clip('264269', 'Phantom Flex 4K reel'),
   showcase: [
     clip('60077', 'High speed, two formats at once'),
     clip('148186', 'Phantom Flex 4K footage'),

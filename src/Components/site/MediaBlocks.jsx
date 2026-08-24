@@ -38,6 +38,7 @@ export function VideoBlock({ clip, className = '', autoPlay = true }) {
           loop
           playsInline
           preload="auto"
+          style={{ transform: "translateZ(0)", filter: "contrast(1.03) brightness(1.02)" }}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
         />
