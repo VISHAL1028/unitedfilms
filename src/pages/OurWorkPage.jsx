@@ -3,75 +3,7 @@ import { Play, X, ExternalLink, ArrowRight } from 'lucide-react';
 import { ContactStrip, PageTitle, Section, SiteShell } from '@/components/site/SiteSection';
 import { getAllWorks } from '@/lib/works';
 
-/* ─── Fallback Project Showcases ─── */
-const FALLBACK_WORKS = [
-  {
-    id: 'work-1',
-    title: 'Phantom High-Speed Chase',
-    category: 'Commercial',
-    description: 'A high-octane automotive commercial filmed on the Phantom Flex 4K at 2,500 fps, capturing every splash of water and tire drift in crystal slow motion.',
-    thumbnailUrl: '/archive/img-86faa472-b5b6-4f5f-b278-ca7332a676dd.jpg',
-    videoUrl: '/archive/vid-264269.mp4',
-    year: '2024',
-    client: 'United Films Production',
-    tags: ['High-Speed', '4K', 'Commercial'],
-  },
-  {
-    id: 'work-2',
-    title: 'Extreme Action & Ocean Waves',
-    category: 'Action Sports',
-    description: 'High-speed extreme sports cinematography capturing surfing, skiing, and board movements with millisecond precision.',
-    thumbnailUrl: '/archive/img-bd65e40b-73f6-4edf-b025-6c32b11b1186.jpg',
-    videoUrl: '/archive/vid-224384.mp4',
-    year: '2024',
-    client: 'Action Sports Feature',
-    tags: ['Surfing', 'Slow-Mo', 'Outdoor'],
-  },
-  {
-    id: 'work-3',
-    title: 'Autodesk Flame Relighting Series',
-    category: 'Film Restoration',
-    description: 'Digitally restored and relit archival 16mm/35mm footage frame-by-frame using our on-set Flame finishing workstation.',
-    thumbnailUrl: '/archive/img-f4160e31-3212-4c8c-8f53-b5649439f7b7.jpg',
-    videoUrl: '/archive/vid-203960.mp4',
-    year: '2023',
-    client: 'Archive Film Preservation',
-    tags: ['Restoration', 'VFX', 'Flame'],
-  },
-  {
-    id: 'work-4',
-    title: '3.5-Second Music Video Shoot',
-    category: 'Music Video',
-    description: 'A full 3.5-minute music video shot in only 3.5 seconds of real time using the Phantom Flex 4K at 1000 fps.',
-    thumbnailUrl: '/archive/img-bd1cb60d-90ca-4f8f-89e9-f4c6e5e3b0fc.jpg',
-    videoUrl: '/archive/vid-171360.mp4',
-    year: '2023',
-    client: 'Music Video Production',
-    tags: ['Music Video', 'High-Speed', 'Creative'],
-  },
-  {
-    id: 'work-5',
-    title: '16/35mm Scanning & Ultrasonic Cleaning',
-    category: 'Film Restoration',
-    description: 'End-to-end SMPTE film restoration workflow using Spirit 4K telecine and Phoenix digital grading.',
-    thumbnailUrl: '/archive/img-02da0c35-8c89-4e16-9d31-24f6e883260f.jpg',
-    videoUrl: '/archive/vid-190171.mp4',
-    year: '2023',
-    client: 'Heritage Reel Vault',
-    tags: ['16mm', '35mm', 'Scanning'],
-  },
-  {
-    id: 'work-6',
-    title: '360° 3D VR Virtual Backdrop',
-    category: '360 VR',
-    description: '8K-12K high resolution 360-degree immersive capture for virtual stage LED backgrounds and medical VR productions.',
-    thumbnailUrl: '/archive/img-bbc5aead-6b5c-409f-85bc-37201a26fec4.jpg',
-    videoUrl: '/archive/vid-306188.mp4',
-    year: '2024',
-    client: 'Virtual Stage Backdrops',
-    tags: ['360 VR', 'Unreal Engine', 'HDR'],
-  },
-];
+
 
 /* ─── Work Card ─── */
 const WorkCard = ({ work, onOpenLightbox }) => {
@@ -266,17 +198,12 @@ export default function OurWorkPage() {
   useEffect(() => {
     getAllWorks()
       .then((data) => {
-        if (data && data.length > 0) setWorks(data);
+        setWorks(data || []);
       })
       .catch(() => {});
   }, []);
 
-  const workList = useMemo(() => {
-    if (works.length === 0) return FALLBACK_WORKS;
-    const dbTitles = new Set(works.map((w) => w.title?.toLowerCase()));
-    const remainingFallback = FALLBACK_WORKS.filter((f) => !dbTitles.has(f.title?.toLowerCase()));
-    return [...works, ...remainingFallback];
-  }, [works]);
+  const workList = works;
 
   const categories = useMemo(() => {
     const set = new Set(workList.map((w) => w.category).filter(Boolean));
@@ -316,11 +243,18 @@ export default function OurWorkPage() {
         </div>
 
         {/* Works Grid */}
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((work) => (
-            <WorkCard key={work.id} work={work} onOpenLightbox={setActiveLightbox} />
-          ))}
-        </div>
+        {filtered.length === 0 ? (
+          <div className="border border-border bg-card p-12 text-center text-muted-foreground">
+            <p className="text-sm">No portfolio projects found.</p>
+            <p className="mt-1 text-xs text-muted-foreground/80">Add projects from the Admin panel to showcase them here.</p>
+          </div>
+        ) : (
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((work) => (
+              <WorkCard key={work.id} work={work} onOpenLightbox={setActiveLightbox} />
+            ))}
+          </div>
+        )}
       </Section>
 
       <Section>

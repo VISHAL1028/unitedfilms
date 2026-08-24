@@ -5,72 +5,7 @@ import { ImageGrid, SpecList } from '@/components/site/MediaBlocks';
 import { images } from '@/lib/site-media';
 import { getAllEquipment } from '@/lib/db';
 
-const STATIC_EQUIPMENT = [
-  {
-    id: 'phantom-flex-4k',
-    name: 'Phantom Flex 4K (1000 fps)',
-    category: 'Cameras',
-    description: 'High-speed 4K camera with 2 simultaneous format outputs (standard 24-30 fps + high-speed up to 2000 fps). Includes technician.',
-    image: images.phantomHero,
-    status: 'Available for Rent',
-  },
-  {
-    id: 'arri-master-primes',
-    name: 'ARRI Master Primes (Set of 6)',
-    category: 'Lenses',
-    description: 'T1.3 high-speed cinema prime lens set with outstanding optical performance, flare resistance, and cinematic bokeh.',
-    image: images.equipment[19] || images.phantomHero,
-    status: 'Available for Rent / Sale',
-  },
-  {
-    id: 'dft-scanity',
-    name: 'DFT Scanity Film Scanner 16/35mm',
-    category: 'Scanners & Lab',
-    description: 'State-of-the-art optical capstan scanner delivering pin-sharp 4K/2K resolution scans with gentle film handling.',
-    image: images.equipment[0] || images.phantomHero,
-    status: 'In Facility',
-  },
-  {
-    id: 'phoenix-restoration',
-    name: 'Phoenix Film Restoration Suite',
-    category: 'Grading & VFX',
-    description: 'World-class SMPTE standards automated and interactive digital film restoration with 80TB on-set storage.',
-    image: images.equipment[7] || images.phantomHero,
-    status: 'In Facility',
-  },
-  {
-    id: 'angenieux-optimo-24-290',
-    name: 'Angenieux Optimo Zoom 24-290mm',
-    category: 'Lenses',
-    description: 'Industry benchmark cinema zoom lens with superb optical quality, constant aperture, and robust mechanics.',
-    image: images.equipment[18] || images.phantomHero,
-    status: 'Available for Rent',
-  },
-  {
-    id: 'autodesk-flame-2015',
-    name: 'Autodesk Flame Relighting Workstation',
-    category: 'Grading & VFX',
-    description: 'High-end 3D VFX, finishing, and interactive on-set relighting workstation for rapid look development.',
-    image: images.equipment[9] || images.phantomHero,
-    status: 'Available on Set',
-  },
-  {
-    id: 'christie-laser-dcp',
-    name: 'Christie Laser DCP 4K Projector',
-    category: 'Projectors',
-    description: 'DCI-compliant cinema laser projection system for premium screening rooms and post-production color grading.',
-    image: images.equipment[27] || images.phantomHero,
-    status: 'Available',
-  },
-  {
-    id: 'oconnor-2575',
-    name: "O'Connor 2575B Fluid Head & Tripod",
-    category: 'Support',
-    description: 'Heavy-duty cinema fluid head with stepless counterbalance and ultra-smooth pan/tilt for camera packages up to 90 lbs.',
-    image: images.equipment[35] || images.phantomHero,
-    status: 'Available',
-  },
-];
+
 
 const GRADING = [
   'DFT Scanity film scanner 16/35',
@@ -164,21 +99,18 @@ export default function EquipmentPage() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [dbEquipment, setDbEquipment] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getAllEquipment()
       .then((data) => {
-        if (data && data.length > 0) setDbEquipment(data);
+        setDbEquipment(data || []);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  const equipmentList = useMemo(() => {
-    if (dbEquipment.length === 0) return STATIC_EQUIPMENT;
-    const dbNames = new Set(dbEquipment.map((d) => d.name?.toLowerCase()));
-    const remainingStatic = STATIC_EQUIPMENT.filter((s) => !dbNames.has(s.name?.toLowerCase()));
-    return [...dbEquipment, ...remainingStatic];
-  }, [dbEquipment]);
+  const equipmentList = dbEquipment;
 
   const categories = useMemo(() => {
     const set = new Set(equipmentList.map((i) => i.category).filter(Boolean));
