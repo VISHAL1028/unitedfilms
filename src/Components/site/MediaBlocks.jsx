@@ -37,7 +37,7 @@ export function VideoBlock({ clip, className = '', autoPlay = true }) {
           muted={isMuted}
           loop
           playsInline
-          preload="metadata"
+          preload="auto"
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
         />
