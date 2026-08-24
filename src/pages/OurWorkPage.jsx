@@ -271,7 +271,12 @@ export default function OurWorkPage() {
       .catch(() => {});
   }, []);
 
-  const workList = works.length > 0 ? works : FALLBACK_WORKS;
+  const workList = useMemo(() => {
+    if (works.length === 0) return FALLBACK_WORKS;
+    const dbTitles = new Set(works.map((w) => w.title?.toLowerCase()));
+    const remainingFallback = FALLBACK_WORKS.filter((f) => !dbTitles.has(f.title?.toLowerCase()));
+    return [...works, ...remainingFallback];
+  }, [works]);
 
   const categories = useMemo(() => {
     const set = new Set(workList.map((w) => w.category).filter(Boolean));

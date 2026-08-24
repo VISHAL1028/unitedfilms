@@ -173,7 +173,12 @@ export default function EquipmentPage() {
       .catch(() => {});
   }, []);
 
-  const equipmentList = dbEquipment.length > 0 ? dbEquipment : STATIC_EQUIPMENT;
+  const equipmentList = useMemo(() => {
+    if (dbEquipment.length === 0) return STATIC_EQUIPMENT;
+    const dbNames = new Set(dbEquipment.map((d) => d.name?.toLowerCase()));
+    const remainingStatic = STATIC_EQUIPMENT.filter((s) => !dbNames.has(s.name?.toLowerCase()));
+    return [...dbEquipment, ...remainingStatic];
+  }, [dbEquipment]);
 
   const categories = useMemo(() => {
     const set = new Set(equipmentList.map((i) => i.category).filter(Boolean));
