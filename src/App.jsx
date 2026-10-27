@@ -27,6 +27,8 @@ import EquipmentForm from "./pages/admin/EquipmentForm";
 import RentalsManager from "./pages/admin/RentalsManager";
 import MessagesPage from "./pages/admin/MessagesPage";
 import WorksManager from "./pages/admin/WorksManager";
+import VideosManager from "./pages/admin/VideosManager";
+import EquipmentRequests from "./pages/admin/EquipmentRequests";
 
 const queryClient = new QueryClient();
 
@@ -54,12 +56,14 @@ const App = () => (
             {/* Admin auth */}
             <Route path="/login" element={<LoginPage />} />
 
-            {/* Admin CMS (Protected) — all 4 backend services */}
+            {/* Admin CMS (Protected) — all 5 backend services */}
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/videos" element={<ProtectedRoute><VideosManager /></ProtectedRoute>} />
             <Route path="/admin/equipment" element={<ProtectedRoute><EquipmentForm /></ProtectedRoute>} />
             <Route path="/admin/rentals" element={<ProtectedRoute><RentalsManager /></ProtectedRoute>} />
             <Route path="/admin/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
             <Route path="/admin/works" element={<ProtectedRoute><WorksManager /></ProtectedRoute>} />
+            <Route path="/admin/equipment-requests" element={<ProtectedRoute><EquipmentRequests /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

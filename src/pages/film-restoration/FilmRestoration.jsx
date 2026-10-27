@@ -1,11 +1,13 @@
 // FilmRestoration — exact port of film-essence-archive film-restoration.tsx
 import { ContactStrip, PageTitle, Section, SiteShell } from '@/components/site/SiteSection';
 import { SpecList, VideoBlock } from '@/components/site/MediaBlocks';
-import { clips } from '@/lib/site-media';
+import { useSiteVideos } from '@/hooks/useSiteVideos';
 
 const WORKFLOW = ['Lipsner Smith ultrasonic film cleaning','Spirit 4K or Arriscan 4/6K scanning','Phoenix restoration into Nucoda grading','Optional Arri Laser back out to archival film or tape'];
 
 export default function FilmRestoration() {
+  const { clips } = useSiteVideos();
+
   return (
     <SiteShell>
       <PageTitle kicker="Free 1 min test" title="Film restoration" lead="16/35mm film scanning. SMPTE standards film restoration and preservation, end to end, on our own machines." />

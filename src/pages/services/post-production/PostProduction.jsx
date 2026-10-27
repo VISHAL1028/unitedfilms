@@ -1,11 +1,14 @@
 // PostProduction — exact port of film-essence-archive post-production.tsx
 import { ContactStrip, PageTitle, Section, SiteShell } from '@/components/site/SiteSection';
 import { ImageGrid, SpecList, VideoBlock } from '@/components/site/MediaBlocks';
-import { clips, images } from '@/lib/site-media';
+import { images } from '@/lib/site-media';
+import { useSiteVideos } from '@/hooks/useSiteVideos';
 
 const SUITE = ['Nucoda color grading system','Phoenix film restoration system','Autodesk Flame — finishing, special effects, on-set relighting','Nucoda Phoenix 2021 with 80TB on-set storage','DCI compliant post production projector available','Support and operator available'];
 
 export default function PostProduction() {
+  const { clips } = useSiteVideos();
+
   return (
     <SiteShell>
       <PageTitle kicker="Work flow" title="Post production" lead="On-set color correction and dailies, relighting with Autodesk Flame, and a simplified 8K/6K/4K digital intermediate workflow from A to Z." />

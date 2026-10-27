@@ -41,7 +41,7 @@ export const Footer = () => (
               <Link className="hover:text-primary" to={item.to}>{item.label}</Link>
             </li>
           ))}
-          <li><Link className="hover:text-primary" to="/login">Admin Login</Link></li>
+          <li><Link className="hover:text-primary" to="/login">Website Admin</Link></li>
         </ul>
       </div>
     </div>

@@ -2,7 +2,8 @@
 import { Link } from 'react-router-dom';
 import { ContactStrip, Section, SiteShell } from '@/components/site/SiteSection';
 import { ImageGrid, SpecList, VideoBlock, VideoGrid } from '@/components/site/MediaBlocks';
-import { clips, contactInfo, images } from '@/lib/site-media';
+import { contactInfo, images } from '@/lib/site-media';
+import { useSiteVideos } from '@/hooks/useSiteVideos';
 
 const QUICK_LINKS = [
   { to: '/our-work', label: 'View Our Work' },
@@ -25,6 +26,8 @@ const PACKAGE = [
 ];
 
 export default function Index() {
+  const { clips } = useSiteVideos();
+
   return (
     <SiteShell>
       {/* Hero title band */}
@@ -129,9 +132,6 @@ export default function Index() {
               A Flame relighting workstation can travel with the camera package — save time and money
               while achieving the exact lighting you want with this special effects tool.
             </p>
-            <div className="mt-6">
-              <ImageGrid images={images.post} alt="Post production suite" columns={3} />
-            </div>
           </div>
         </div>
       </Section>

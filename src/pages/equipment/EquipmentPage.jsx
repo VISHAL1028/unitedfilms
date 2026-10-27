@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Search, X, SlidersHorizontal, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Search, X, ArrowRight, ShieldCheck, Send, Camera, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { ContactStrip, PageTitle, Section, SiteShell } from '@/components/site/SiteSection';
 import { ImageGrid, SpecList } from '@/components/site/MediaBlocks';
 import { images } from '@/lib/site-media';
-import { getAllEquipment } from '@/lib/db';
+import { getAllEquipment, saveEquipmentRequest } from '@/lib/db';
 
 
 
@@ -101,11 +101,45 @@ export default function EquipmentPage() {
   const [dbEquipment, setDbEquipment] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Submission form state
+  const SUBMIT_CATEGORIES = [
+    'Cameras', 'Lenses', 'Color Grading & VFX', 'Film Scanners & Restoration',
+    'Film Processing & Lab', 'Projectors', 'Support Equipment', 'Storage & Systems', 'Other',
+  ];
+  const emptySubmit = {
+    submitterName: '', submitterEmail: '', submitterPhone: '',
+    equipmentName: '', category: 'Cameras', description: '',
+    askingPrice: '', condition: 'Excellent', photoUrl: '',
+  };
+  const [submitForm, setSubmitForm] = useState(emptySubmit);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  const updateSubmit = (field, value) => setSubmitForm((f) => ({ ...f, [field]: value }));
+
+  const handleSubmitRequest = async (e) => {
+    e.preventDefault();
+    setSubmitError('');
+    if (!submitForm.submitterName || !submitForm.submitterEmail || !submitForm.equipmentName) {
+      setSubmitError('Please fill in your name, email, and equipment name.');
+      return;
+    }
+    setSubmitLoading(true);
+    try {
+      await saveEquipmentRequest(submitForm);
+      setSubmitSuccess(true);
+      setSubmitForm(emptySubmit);
+    } catch {
+      setSubmitError('Failed to submit. Please try again or contact us directly.');
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
   useEffect(() => {
     getAllEquipment()
-      .then((data) => {
-        setDbEquipment(data || []);
-      })
+      .then((data) => { setDbEquipment(data || []); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -130,6 +164,10 @@ export default function EquipmentPage() {
     });
   }, [equipmentList, activeCategory, searchQuery]);
 
+  const scrollToForm = () => {
+    document.getElementById('submit-equipment-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <SiteShell>
       <PageTitle
@@ -140,6 +178,25 @@ export default function EquipmentPage() {
 
       {/* Available Equipment Cards Section */}
       <Section title="Available Equipment Inventory">
+        {/* ── List Your Equipment CTA ── */}
+        <div className="mb-8 flex flex-col items-start justify-between gap-4 border border-border bg-card p-5 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-primary/40 bg-primary/10 text-primary">
+              <Camera size={18} />
+            </div>
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.08em] text-foreground">Have equipment to sell or rent?</p>
+              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">Submit your gear — we review and list it on this page for free.</p>
+            </div>
+          </div>
+          <button
+            onClick={scrollToForm}
+            className="inline-flex shrink-0 items-center gap-2 border border-primary bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-[0.1em] text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            List My Equipment <ArrowRight size={13} />
+          </button>
+        </div>
+
         {/* Search & Category Filter Bar */}
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap gap-2">
@@ -267,6 +324,192 @@ export default function EquipmentPage() {
       <Section title="Inventory photos">
         <ImageGrid images={images.equipment} alt="Equipment for sale" columns={4} />
       </Section>
+
+      {/* ── Submit Your Equipment ── */}
+      <div id="submit-equipment-form">
+        <Section title="List Your Equipment With Us">
+          <div className="grid gap-10 lg:grid-cols-[1fr_2fr]">
+
+            {/* Left — info panel */}
+            <div className="flex flex-col gap-6 border border-border bg-card p-6">
+              <div>
+                <div className="mb-4 flex h-12 w-12 items-center justify-center border border-primary/40 bg-primary/10 text-primary">
+                  <Camera size={22} />
+                </div>
+                <h3 className="text-base font-bold uppercase tracking-[0.08em] text-foreground">Have Equipment to Sell or Rent?</h3>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  Submit your professional cinema equipment for listing on our marketplace. Our team reviews every submission — if approved, your item will appear on this page for productions worldwide.
+                </p>
+              </div>
+              <ul className="flex flex-col gap-3 border-t border-border pt-5">
+                {['Free to list — no commission', 'Reviewed within 48 hours', 'Reach professional film productions'].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-accent">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center border border-accent/30 bg-accent/10 text-[10px]">✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Right — form */}
+            <div className="border border-border bg-card">
+              {submitSuccess ? (
+                <div className="flex flex-col items-center justify-center gap-5 px-8 py-16 text-center">
+                  <div className="flex h-16 w-16 items-center justify-center border border-accent/30 bg-accent/10 text-accent">
+                    <CheckCircle size={32} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold uppercase tracking-wider text-foreground">Request Submitted!</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground max-w-sm">
+                      Thank you — our team will review your equipment and contact you within 48 hours.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSubmitSuccess(false)}
+                    className="border border-primary bg-primary px-6 py-2.5 text-xs font-bold uppercase tracking-[0.1em] text-primary-foreground transition-opacity hover:opacity-90"
+                  >
+                    Submit Another Item
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmitRequest} className="flex flex-col gap-6 p-6">
+
+                  {/* Section: Your Details */}
+                  <div>
+                    <p className="mb-4 border-b border-border pb-2 text-[0.625rem] font-bold uppercase tracking-[0.12em] text-muted-foreground">Your Details</p>
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[0.625rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">Full Name *</label>
+                        <input
+                          type="text" required placeholder="e.g. James Anderson"
+                          value={submitForm.submitterName}
+                          onChange={(e) => updateSubmit('submitterName', e.target.value)}
+                          className="border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[0.625rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">Email *</label>
+                        <input
+                          type="email" required placeholder="you@example.com"
+                          value={submitForm.submitterEmail}
+                          onChange={(e) => updateSubmit('submitterEmail', e.target.value)}
+                          className="border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[0.625rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">Phone</label>
+                        <input
+                          type="tel" placeholder="+1 555 000 0000"
+                          value={submitForm.submitterPhone}
+                          onChange={(e) => updateSubmit('submitterPhone', e.target.value)}
+                          className="border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section: Equipment Details */}
+                  <div>
+                    <p className="mb-4 border-b border-border pb-2 text-[0.625rem] font-bold uppercase tracking-[0.12em] text-muted-foreground">Equipment Details</p>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[0.625rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">Equipment Name *</label>
+                        <input
+                          type="text" required placeholder="e.g. Arri Alexa Mini LF"
+                          value={submitForm.equipmentName}
+                          onChange={(e) => updateSubmit('equipmentName', e.target.value)}
+                          className="border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[0.625rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">Category</label>
+                        <select
+                          value={submitForm.category}
+                          onChange={(e) => updateSubmit('category', e.target.value)}
+                          className="border border-border bg-background px-3 py-2 text-xs text-foreground focus:border-primary focus:outline-none"
+                        >
+                          {SUBMIT_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[0.625rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">Asking Price</label>
+                        <input
+                          type="text" placeholder="e.g. $4,500 or $200/day"
+                          value={submitForm.askingPrice}
+                          onChange={(e) => updateSubmit('askingPrice', e.target.value)}
+                          className="border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[0.625rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">Condition</label>
+                        <select
+                          value={submitForm.condition}
+                          onChange={(e) => updateSubmit('condition', e.target.value)}
+                          className="border border-border bg-background px-3 py-2 text-xs text-foreground focus:border-primary focus:outline-none"
+                        >
+                          <option>Excellent</option>
+                          <option>Good</option>
+                          <option>Fair</option>
+                          <option>For Parts</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Photo URL + Description */}
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[0.625rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">Photo URL (Optional)</label>
+                      <input
+                        type="url" placeholder="https://your-image-link.com/photo.jpg"
+                        value={submitForm.photoUrl}
+                        onChange={(e) => updateSubmit('photoUrl', e.target.value)}
+                        className="border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[0.625rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">Description</label>
+                      <textarea
+                        rows={3}
+                        placeholder="Specs, included accessories, reason for selling, any defects..."
+                        value={submitForm.description}
+                        onChange={(e) => updateSubmit('description', e.target.value)}
+                        className="resize-none border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {submitError && (
+                    <div className="flex items-center gap-2 border border-destructive/30 bg-destructive/10 px-4 py-3 text-xs text-destructive">
+                      <AlertCircle size={13} />
+                      {submitError}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={submitLoading}
+                    className="inline-flex items-center justify-center gap-2 border border-primary bg-primary px-6 py-3 text-xs font-bold uppercase tracking-[0.1em] text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {submitLoading
+                      ? <><Loader2 size={14} className="animate-spin" /> Submitting...</>
+                      : <><Send size={13} /> Submit for Review</>
+                    }
+                  </button>
+                </form>
+              )}
+            </div>
+
+          </div>
+        </Section>
+      </div>
+
+      {/* ── Floating "List Equipment" button ── */}
+      <button onClick={scrollToForm} className="equip-float-btn" aria-label="List your equipment">
+        <Camera size={18} />
+        <span>List Your Equipment</span>
+      </button>
+
     </SiteShell>
   );
 }

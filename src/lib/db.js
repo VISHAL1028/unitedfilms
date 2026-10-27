@@ -112,3 +112,49 @@ export const markMessageRead = (id, read = true) =>
 
 export const deleteMessage = (id) =>
   deleteDoc(doc(db, "messages", id));
+
+// ─── SITE VIDEOS & REEL CMS ───
+
+export const getVideoConfig = async () => {
+  try {
+    const snap = await getDoc(doc(db, "settings", "siteVideos"));
+    if (snap.exists()) return snap.data();
+  } catch (err) {
+    console.error("Error fetching site videos configuration:", err);
+  }
+  return null;
+};
+
+export const saveVideoConfig = async (data) => {
+  return setDoc(
+    doc(db, "settings", "siteVideos"),
+    { ...data, updatedAt: serverTimestamp() },
+    { merge: true }
+  );
+};
+
+export const resetVideoConfig = async () => {
+  return deleteDoc(doc(db, "settings", "siteVideos"));
+};
+
+// ─── EQUIPMENT SUBMISSION REQUESTS (Public) ───
+
+export const saveEquipmentRequest = (data) =>
+  addDoc(collection(db, "equipment_requests"), {
+    ...data,
+    status: "pending", // pending | approved | rejected
+    createdAt: serverTimestamp(),
+  });
+
+export const getAllEquipmentRequests = async () => {
+  const snap = await getDocs(
+    query(collection(db, "equipment_requests"), orderBy("createdAt", "desc"))
+  );
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+};
+
+export const updateEquipmentRequestStatus = (id, status) =>
+  updateDoc(doc(db, "equipment_requests", id), { status });
+
+export const deleteEquipmentRequest = (id) =>
+  deleteDoc(doc(db, "equipment_requests", id));

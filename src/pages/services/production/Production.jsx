@@ -1,11 +1,14 @@
 // Production — exact port of film-essence-archive production.tsx
 import { ContactStrip, PageTitle, Section, SiteShell } from '@/components/site/SiteSection';
 import { ImageGrid, SpecList, VideoBlock, VideoGrid } from '@/components/site/MediaBlocks';
-import { clips, images } from '@/lib/site-media';
+import { images } from '@/lib/site-media';
+import { useSiteVideos } from '@/hooks/useSiteVideos';
 
 const PACKAGE = ['Phantom Flex 4K camera','Recorder + preview monitor','Tripod','Lenses 50mm, 100mm, 300mm (vintage lens set available)','Remote control','Underwater housing for the Phantom camera (in making)','Splash bag camera protection','Flame relighting workstation — save time and money on set'];
 
 export default function Production() {
+  const { clips } = useSiteVideos();
+
   return (
     <SiteShell>
       <PageTitle kicker="2 formats at the same time" title="Production" lead="Phantom Flex 4K super slow motion camera shoots two formats — high speed and regular speed — at the same time. Film production, live sports, expeditions, commercials and research." />

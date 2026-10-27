@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ContactStrip, PageTitle, Section, SiteShell } from '@/components/site/SiteSection';
 import { SpecList, VideoBlock } from '@/components/site/MediaBlocks';
-import { clips } from '@/lib/site-media';
 import { getSpecialRentalConfig } from '@/lib/db';
+import { useSiteVideos } from '@/hooks/useSiteVideos';
 
 const DEFAULT_INCLUDED = [
   'Phantom Flex 4K camera + recorder + preview monitor',
@@ -15,6 +15,7 @@ const DEFAULT_INCLUDED = [
 ];
 
 export default function SpecialRental() {
+  const { clips } = useSiteVideos();
   const [config, setConfig] = useState({
     kicker: '!!! Special special special !!!',
     title: 'Special rental',
